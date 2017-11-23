@@ -1,7 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Part of a library developed for text data processing tasks.
+ * Copyright 2017 Andy Turner, University of Leeds.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package uk.ac.leeds.ccg.andyt.text.process;
 
@@ -21,8 +32,13 @@ import uk.ac.leeds.ccg.andyt.generic.lang.Generic_StaticString;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
- *
- * @author geoagdt
+ * This class has a main method and so can be run. It was developed originally
+ * for processing a set of files downloaded from NexisLexis for an undergraduate
+ * student dissertation project. The NexisLexis files are in HTML format and
+ * comprise the text of sets of articles downloaded from
+ * http://www.nexislexis.com from the Express and Guardian newspapers from the
+ * 1st of April 2015 to the 10th of February 2016. The search criteria for the
+ * articles included the words "refugee" or "brexit" or both.
  */
 public class Text_Processor {
 
@@ -288,8 +304,8 @@ public class Text_Processor {
             s = s.replace("</span><span class=\"c10\">refugees</span><span class=\"c7\"></span><span class=\"c10\">refugees</span><span class=\"c7\">", "refugees");
             s = s.replace("</span><span class=\"c10\">Refugees</span><span class=\"c7\"></span><span class=\"c10\">Refugees</span><span class=\"c7\">", "refugees");
             s = s.replace("</span><span class=\"c10\">Brexit</span><span class=\"c7\">", "Brexit");
-            s =s.replace("&nbsp;", " ");
-            s =s.replace("&amp;", " ");
+            s = s.replace("&nbsp;", " ");
+            s = s.replace("&amp;", " ");
             String[] split = s.split("</span>");
             result = split[0];
             if (result.contains("<br>")) {
