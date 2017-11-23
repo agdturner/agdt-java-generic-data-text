@@ -42,13 +42,23 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
  */
 public class Text_Processor {
 
+    /**
+     * Files is used to help manage input and output to the file system.
+     */
+    Text_Files Files;
+
+    public Text_Processor() {
+    }
+
     public static void main(String[] args) {
         new Text_Processor().run();
     }
 
-    Text_Files Files;
-
+    /**
+     * This is the main processing method.
+     */
     public void run() {
+        // Initialise directories
         String dataDirName;
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
@@ -57,13 +67,30 @@ public class Text_Processor {
                 Files.getLexisNexisInputDataDir(),
                 "LexisNexis-20171122T195223Z-001/LexisNexis");
         System.out.println(inputDir);
+        /**
+         * Process the data going through each input file. Currently the output
+         * is simply printed to std.out.
+         */
         File[] inputs0;
         File[] inputs1;
         inputs0 = inputDir.listFiles();
+        /**
+         * Iterate through all the directories in inputDir. It is known that
+         * inputDir contains only directories and no files.
+         */
         for (File input0 : inputs0) {
+            /**
+             * Print out the name of the directory/File.
+             */
             //System.out.println(input0);
             System.out.println(input0.getName());
+            /**
+             * Iterate through all the files in the directory.
+             */
             inputs1 = input0.listFiles();
+            /**
+             * Initialise results.
+             */
             int grandTotalRefugeeWordCount = 0;
             int grandTotalSyriaWordCount = 0;
             int grandTotalBrexitWordCount = 0;
@@ -76,11 +103,28 @@ public class Text_Processor {
             //int grandTotalRefugeeWordCountOnSaturdays = 0;
             //int grandTotalSyriaWordCountOnSaturdays = 0;
             //int grandTotalBrexitWordCountOnSaturdays = 0;
+            /**
+             * Iterate through all the subdirectories in inputDir. It is known
+             * that each subdirectory contains a set of HTML files and
+             * associated directories. For the purposes of this processing, only
+             * the HTML files are processed.
+             */
             for (File input1 : inputs1) {
                 //System.out.println(input1);
+                /**
+                 * Filter to only process the HTML files.
+                 */
                 if (input1.getName().endsWith("htm")) {
                     //System.out.println(input1);
+                    /**
+                     * Parse the HTML file and obtain part of the result.
+                     */
                     Object[] results = parseHTML(input1);
+                    /**
+                     * Combine the results from parsing this file to the overall
+                     * results.
+                     */
+                    // Process counts.
                     int[] totals;
                     totals = (int[]) results[0];
                     grandTotalRefugeeWordCount += totals[0];
@@ -128,7 +172,7 @@ public class Text_Processor {
                         }
                         grandTotalBrexitWordCountOnDay.put(day, i);
                     }
-                    //if () {
+                    // Process dates and headlines writing out a list.
                     TreeSet<DateHeadline> syriaDateHeadlines;
                     syriaDateHeadlines = (TreeSet<DateHeadline>) results[4];
                     Iterator<DateHeadline> ite2;
@@ -138,16 +182,17 @@ public class Text_Processor {
                         dh = ite2.next();
                         System.out.println(dh.LD + " " + dh.Headline);
                     }
-                    //}
-//                    grandTotalRefugeeWordCountOnSaturdays += totals[3];
-//                    grandTotalSyriaWordCountOnSaturdays += totals[4];
-//                    grandTotalBrexitWordCountOnSaturdays += totals[5];
                 }
             }
+            /**
+             * Write out summaries of counts.
+             */
             //System.out.println(input0.getName());
-            System.out.println("refugee word count " + grandTotalRefugeeWordCount);
-            System.out.println("syria word count " + grandTotalSyriaWordCount);
-            System.out.println("brexit word count " + grandTotalBrexitWordCount);
+            // Overall summaries.
+            System.out.println("Refugee word count " + grandTotalRefugeeWordCount);
+            System.out.println("Syria word count " + grandTotalSyriaWordCount);
+            System.out.println("Brexit word count " + grandTotalBrexitWordCount);
+            // Summaries for each day of the week.
             // Refugee
             ite = grandTotalRefugeeWordCountOnDay.keySet().iterator();
             while (ite.hasNext()) {
@@ -173,7 +218,24 @@ public class Text_Processor {
         }
     }
 
-    Object[] parseHTML(File input) {
+    /**
+     * This method parses the HTML file and returns results that are packed into
+     * an Object[] result of size 5: result[0] is an int[] of size 3 containing
+     * counts of the numbers of mentions of the terms "refugee", "syria" and
+     * "brexit" respectively. result[1] is TreeMap with keys that are the
+     * DayOfWeek and values that are counts of the number of times the word
+     * "refugee" appears on those days. result[2] is TreeMap with keys that are
+     * the DayOfWeek and values that are counts of the number of times the word
+     * "syria" appears on those days. result[3] is TreeMap with keys that are
+     * the DayOfWeek and values that are counts of the number of times the word
+     * "brexit" appears on those days. result[4] is a TreeSet of DateHeadlines
+     * which provides the dated and headlines of articles that have mention of
+     * "syria" in them.
+     *
+     * @param input The input file to be parsed.
+     * @return
+     */
+    public Object[] parseHTML(File input) {
         Object[] result = new Object[5];
         int[] totals = new int[3];
         result[0] = totals;
@@ -192,7 +254,7 @@ public class Text_Processor {
         int refugeeWordCount = 0;
         int syriaWordCount = 0;
         int brexitWordCount = 0;
-        LocalDate oldDate = null;
+        LocalDate date0 = null;
         boolean gotFirstDate = false;
         boolean gotTitle = false;
         String title = null;
@@ -203,18 +265,32 @@ public class Text_Processor {
                 Logger.getLogger(Text_Processor.class.getName()).log(Level.SEVERE, null, ex);
             }
             if (line == null) {
+                /**
+                 * The file is completely read, so set read to true to exit the
+                 * loop.
+                 */
                 read = true;
             } else {
                 //System.out.println(line);
                 LocalDate date;
                 if (!gotFirstDate) {
-                    oldDate = parseDate(line);
-                    if (oldDate != null) {
+                    // Get to the first article and store the date in date0.
+                    date0 = parseDate(line);
+                    if (date0 != null) {
                         gotFirstDate = true;
                     }
                 } else {
+                    /**
+                     * If the line contains a new date, then assume this is the
+                     * start of a new article: compile the data from the last
+                     * article; and, reset the variables to store information
+                     * about the next article.
+                     */
                     date = parseDate(line);
                     if (date == null) {
+                        /**
+                         * Parse the next article by first getting the title.
+                         */
                         if (!gotTitle) {
                             title = parseTitle(line);
                             if (!title.isEmpty()) {
@@ -235,7 +311,7 @@ public class Text_Processor {
                         totalSyriaWordCount += syriaWordCount;
                         totalBrexitWordCount += brexitWordCount;
                         DayOfWeek day;
-                        day = oldDate.getDayOfWeek();
+                        day = date0.getDayOfWeek();
                         int i;
                         // Refugee
                         if (totalRefugeeWordCountByDay.containsKey(day)) {
@@ -262,6 +338,10 @@ public class Text_Processor {
                         }
                         totalBrexitWordCountByDay.put(day, i);
                         //System.out.println(date);
+                        /**
+                         * Store DateHeadline's for those articles on Saturdays
+                         * that contain the word "syria".
+                         */
                         if (syriaWordCount > 0) {
                             if (date.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
                                 syriaDateHeadlines.add(new DateHeadline(date, title));
@@ -270,7 +350,7 @@ public class Text_Processor {
                         refugeeWordCount = 0;
                         syriaWordCount = 0;
                         brexitWordCount = 0;
-                        oldDate = date;
+                        date0 = date;
                     }
                 }
             }
@@ -285,17 +365,36 @@ public class Text_Processor {
         return result;
     }
 
+    /**
+     * A generalised method that counts the number of times word appears in
+     * line. This is done for the case that word is provided in, for word in all
+     * upper case and for word with a capitalised/uppercase first letter.
+     *
+     * @param word
+     * @param line
+     * @return
+     */
     int getWordCount(String word, String line) {
         int result = 0;
         // word
         result += line.split(word).length - 1;
         // word with capital first letter
-        result += line.split(Generic_StaticString.getUpperCase(word.substring(0, 1)) + word.substring(1, word.length() - 1)).length - 1;
+        result += line.split(
+                Generic_StaticString.getUpperCase(word.substring(0, 1))
+                + word.substring(1, word.length() - 1)).length - 1;
         // word all capitals
         result += line.split(Generic_StaticString.getUpperCase(word)).length - 1;
         return result;
     }
 
+    /**
+     * For parsing a line. If it is thought to be a title as it contains some
+     * key text that it is assumed all titles have, then the title is returned
+     * otherwise an empty String is returned.
+     *
+     * @param line The line that is parsed.
+     * @return
+     */
     String parseTitle(String line) {
         String result = "";
         if (line.startsWith("<br><div class=\"c5\"><p class=\"c6\"><span class=\"c7\">")) {
@@ -316,6 +415,14 @@ public class Text_Processor {
         return result;
     }
 
+    /**
+     * For parsing a line. If it is thought to be a date as it contains some key
+     * text that it is assumed all dates have, then the date is returned
+     * otherwise an empty String is returned.
+     *
+     * @param line
+     * @return
+     */
     LocalDate parseDate(String line) {
         LocalDate result = null;
         if (line.startsWith("<br><div class=\"c3\"><p class=\"c1\"><span class=\"c4\">")) {
@@ -348,7 +455,12 @@ public class Text_Processor {
         return result;
     }
 
-    class DateHeadline implements Comparable<DateHeadline> {
+    /**
+     * A simple inner class for wrapping a LocalDate and a String such that
+     * different instances can be ordered which the are first by date and then
+     * by the String.
+     */
+    public class DateHeadline implements Comparable<DateHeadline> {
 
         LocalDate LD;
         String Headline;
