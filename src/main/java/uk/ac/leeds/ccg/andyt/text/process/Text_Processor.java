@@ -58,6 +58,11 @@ public class Text_Processor {
      * This is the main processing method.
      */
     public void run() {
+
+        boolean writeHeadlines;
+        writeHeadlines = true;
+        writeHeadlines = false;
+
         // Initialise directories
         String dataDirName;
         dataDirName = System.getProperty("user.dir") + "/data";
@@ -65,7 +70,8 @@ public class Text_Processor {
         File inputDir;
         inputDir = new File(
                 Files.getLexisNexisInputDataDir(),
-                "LexisNexis-20171122T195223Z-001/LexisNexis");
+                "LexisNexis-20171127T155442Z-001/LexisNexis");
+//                "LexisNexis-20171122T195223Z-001/LexisNexis");
         System.out.println(inputDir);
         /**
          * Process the data going through each input file. Currently the output
@@ -91,18 +97,16 @@ public class Text_Processor {
             /**
              * Initialise results.
              */
-            int grandTotalRefugeeWordCount = 0;
-            int grandTotalSyriaWordCount = 0;
-            int grandTotalBrexitWordCount = 0;
-            Iterator<DayOfWeek> ite;
-            DayOfWeek day;
-            int i;
-            TreeMap<DayOfWeek, Integer> grandTotalRefugeeWordCountOnDay = new TreeMap<>();
-            TreeMap<DayOfWeek, Integer> grandTotalSyriaWordCountOnDay = new TreeMap<>();
-            TreeMap<DayOfWeek, Integer> grandTotalBrexitWordCountOnDay = new TreeMap<>();
-            //int grandTotalRefugeeWordCountOnSaturdays = 0;
-            //int grandTotalSyriaWordCountOnSaturdays = 0;
-            //int grandTotalBrexitWordCountOnSaturdays = 0;
+            int grandTotalWordCount_Refugee = 0;
+            int grandTotalWordCount_Syria = 0;
+            int grandTotalWordCount_Brexit = 0;
+            int grandTotalWordCount_MigrantCrisis = 0;
+
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDays_Refugee = new TreeMap<>();
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDays_Syria = new TreeMap<>();
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDays_Brexit = new TreeMap<>();
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDays_MigrantCrisis = new TreeMap<>();
+
             /**
              * Iterate through all the subdirectories in inputDir. It is known
              * that each subdirectory contains a set of HTML files and
@@ -127,60 +131,37 @@ public class Text_Processor {
                     // Process counts.
                     int[] totals;
                     totals = (int[]) results[0];
-                    grandTotalRefugeeWordCount += totals[0];
-                    grandTotalSyriaWordCount += totals[1];
-                    grandTotalBrexitWordCount += totals[2];
+                    grandTotalWordCount_Refugee += totals[0];
+                    grandTotalWordCount_Syria += totals[1];
+                    grandTotalWordCount_Brexit += totals[2];
+                    grandTotalWordCount_MigrantCrisis += totals[3];
                     // Refugee count
-                    TreeMap<DayOfWeek, Integer> totalRefugeeWordCountOnDay;
-                    totalRefugeeWordCountOnDay = (TreeMap<DayOfWeek, Integer>) results[1];
-                    ite = totalRefugeeWordCountOnDay.keySet().iterator();
-                    while (ite.hasNext()) {
-                        day = ite.next();
-                        if (grandTotalRefugeeWordCountOnDay.containsKey(day)) {
-                            i = grandTotalRefugeeWordCountOnDay.get(day);
-                            i += totalRefugeeWordCountOnDay.get(day);
-                        } else {
-                            i = totalRefugeeWordCountOnDay.get(day);
-                        }
-                        grandTotalRefugeeWordCountOnDay.put(day, i);
-                    }
+                    addToCount(
+                            (TreeMap<DayOfWeek, Integer>) results[1],
+                            grandTotalWordCountOnDays_Refugee);
                     // Syria count
-                    TreeMap<DayOfWeek, Integer> totalSyriaWordCountOnDay;
-                    totalSyriaWordCountOnDay = (TreeMap<DayOfWeek, Integer>) results[2];
-                    ite = totalSyriaWordCountOnDay.keySet().iterator();
-                    while (ite.hasNext()) {
-                        day = ite.next();
-                        if (grandTotalSyriaWordCountOnDay.containsKey(day)) {
-                            i = grandTotalSyriaWordCountOnDay.get(day);
-                            i += totalSyriaWordCountOnDay.get(day);
-                        } else {
-                            i = totalSyriaWordCountOnDay.get(day);
-                        }
-                        grandTotalSyriaWordCountOnDay.put(day, i);
-                    }
+                    addToCount(
+                            (TreeMap<DayOfWeek, Integer>) results[2],
+                            grandTotalWordCountOnDays_Syria);
                     // Brexit count
-                    TreeMap<DayOfWeek, Integer> totalBrexitWordCountOnDay;
-                    totalBrexitWordCountOnDay = (TreeMap<DayOfWeek, Integer>) results[3];
-                    ite = totalBrexitWordCountOnDay.keySet().iterator();
-                    while (ite.hasNext()) {
-                        day = ite.next();
-                        if (grandTotalBrexitWordCountOnDay.containsKey(day)) {
-                            i = grandTotalBrexitWordCountOnDay.get(day);
-                            i += totalBrexitWordCountOnDay.get(day);
-                        } else {
-                            i = totalBrexitWordCountOnDay.get(day);
+                    addToCount(
+                            (TreeMap<DayOfWeek, Integer>) results[3],
+                            grandTotalWordCountOnDays_Brexit);
+                    // Migrant Crisis count
+                    addToCount(
+                            (TreeMap<DayOfWeek, Integer>) results[4],
+                            grandTotalWordCountOnDays_MigrantCrisis);
+                    if (writeHeadlines) {
+                        // Process dates and headlines writing out a list.
+                        TreeSet<DateHeadline> syriaDateHeadlines;
+                        syriaDateHeadlines = (TreeSet<DateHeadline>) results[5];
+                        Iterator<DateHeadline> ite2;
+                        DateHeadline dh;
+                        ite2 = syriaDateHeadlines.iterator();
+                        while (ite2.hasNext()) {
+                            dh = ite2.next();
+                            System.out.println(dh.LD + " " + dh.Headline);
                         }
-                        grandTotalBrexitWordCountOnDay.put(day, i);
-                    }
-                    // Process dates and headlines writing out a list.
-                    TreeSet<DateHeadline> syriaDateHeadlines;
-                    syriaDateHeadlines = (TreeSet<DateHeadline>) results[4];
-                    Iterator<DateHeadline> ite2;
-                    DateHeadline dh;
-                    ite2 = syriaDateHeadlines.iterator();
-                    while (ite2.hasNext()) {
-                        dh = ite2.next();
-                        System.out.println(dh.LD + " " + dh.Headline);
                     }
                 }
             }
@@ -189,33 +170,35 @@ public class Text_Processor {
              */
             //System.out.println(input0.getName());
             // Overall summaries.
-            System.out.println("Refugee word count " + grandTotalRefugeeWordCount);
-            System.out.println("Syria word count " + grandTotalSyriaWordCount);
-            System.out.println("Brexit word count " + grandTotalBrexitWordCount);
+            System.out.println("Refugee word count " + grandTotalWordCount_Refugee);
+            System.out.println("Syria word count " + grandTotalWordCount_Syria);
+            System.out.println("Brexit word count " + grandTotalWordCount_Brexit);
+            System.out.println("Migrant Crisis word count " + grandTotalWordCount_MigrantCrisis);
             // Summaries for each day of the week.
             // Refugee
-            ite = grandTotalRefugeeWordCountOnDay.keySet().iterator();
-            while (ite.hasNext()) {
-                day = ite.next();
-                i = grandTotalRefugeeWordCountOnDay.get(day);
-                System.out.println("Refugee word count on " + day + " " + i);
-            }
+            printWordCountOnDay("Refugee", grandTotalWordCountOnDays_Refugee);
             // Syria
-            ite = grandTotalSyriaWordCountOnDay.keySet().iterator();
-            while (ite.hasNext()) {
-                day = ite.next();
-                i = grandTotalSyriaWordCountOnDay.get(day);
-                System.out.println("Syria word count on " + day + " " + i);
-            }
+            printWordCountOnDay("Syria", grandTotalWordCountOnDays_Syria);
             // Brexit
-            ite = grandTotalBrexitWordCountOnDay.keySet().iterator();
-            while (ite.hasNext()) {
-                day = ite.next();
-                i = grandTotalBrexitWordCountOnDay.get(day);
-                System.out.println("Brexit word count on " + day + " " + i);
-            }
-            System.out.println("");
+            printWordCountOnDay("Brexit", grandTotalWordCountOnDays_Brexit);
+            // Brexit
+            printWordCountOnDay("Migrant Crisis", grandTotalWordCountOnDays_MigrantCrisis);
         }
+    }
+
+    void printWordCountOnDay(
+            String word,
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay) {
+        Iterator<DayOfWeek> ite;
+        DayOfWeek day;
+        int i;
+        ite = grandTotalWordCountOnDay.keySet().iterator();
+        while (ite.hasNext()) {
+            day = ite.next();
+            i = grandTotalWordCountOnDay.get(day);
+            System.out.println(word + " word count on " + day + " " + i);
+        }
+        System.out.println("");
     }
 
     /**
@@ -236,8 +219,8 @@ public class Text_Processor {
      * @return
      */
     public Object[] parseHTML(File input) {
-        Object[] result = new Object[5];
-        int[] totals = new int[3];
+        Object[] result = new Object[6];
+        int[] totals = new int[4];
         result[0] = totals;
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
@@ -245,15 +228,18 @@ public class Text_Processor {
         br = Generic_StaticIO.getBufferedReader(input);
         String line = null;
         boolean read = false;
-        int totalRefugeeWordCount = 0;
-        int totalSyriaWordCount = 0;
-        int totalBrexitWordCount = 0;
-        TreeMap<DayOfWeek, Integer> totalRefugeeWordCountByDay = new TreeMap<>();
-        TreeMap<DayOfWeek, Integer> totalSyriaWordCountByDay = new TreeMap<>();
-        TreeMap<DayOfWeek, Integer> totalBrexitWordCountByDay = new TreeMap<>();
-        int refugeeWordCount = 0;
-        int syriaWordCount = 0;
-        int brexitWordCount = 0;
+        int totalWordCount_Refugee = 0;
+        int totalWordCount_Syria = 0;
+        int totalWordCount_Brexit = 0;
+        int totalWordCount_MigrantCrisis = 0;
+        TreeMap<DayOfWeek, Integer> totalWordCountByDay_Refugee = new TreeMap<>();
+        TreeMap<DayOfWeek, Integer> totalWordCountByDay_Syria = new TreeMap<>();
+        TreeMap<DayOfWeek, Integer> totalWordCountByDay_Brexit = new TreeMap<>();
+        TreeMap<DayOfWeek, Integer> totalWordCountByDay_MigrantCrisis = new TreeMap<>();
+        int wordCount_Refugee = 0;
+        int wordCount_Syria = 0;
+        int wordCount_Brexit = 0;
+        int wordCount_MigrantCrisis = 0;
         LocalDate date0 = null;
         boolean gotFirstDate = false;
         boolean gotTitle = false;
@@ -299,70 +285,90 @@ public class Text_Processor {
                             }
                         }
                         // Add to word counts
-                        refugeeWordCount += getWordCount("refugee", line);
-                        syriaWordCount += getWordCount("syria", line);
-                        brexitWordCount += getWordCount("brexit", line);
+                        wordCount_Refugee += getWordCount("refugee", line);
+                        wordCount_Syria += getWordCount("syria", line);
+                        wordCount_Brexit += getWordCount("brexit", line);
+                        wordCount_MigrantCrisis += getWordCount("migrant crisis", line);
                     } else {
                         gotTitle = false;
 //                    System.out.println("refugeeWordCount " + refugeeWordCount);
 //                    System.out.println("syriaWordCount " + syriaWordCount);
 //                    System.out.println("brexitWordCount " + brexitWordCount);
-                        totalRefugeeWordCount += refugeeWordCount;
-                        totalSyriaWordCount += syriaWordCount;
-                        totalBrexitWordCount += brexitWordCount;
+                        totalWordCount_Refugee += wordCount_Refugee;
+                        totalWordCount_Syria += wordCount_Syria;
+                        totalWordCount_Brexit += wordCount_Brexit;
+                        totalWordCount_MigrantCrisis += wordCount_MigrantCrisis;
                         DayOfWeek day;
                         day = date0.getDayOfWeek();
                         int i;
                         // Refugee
-                        if (totalRefugeeWordCountByDay.containsKey(day)) {
-                            i = totalRefugeeWordCountByDay.get(day);
-                            i += refugeeWordCount;
-                        } else {
-                            i = refugeeWordCount;
-                        }
-                        totalRefugeeWordCountByDay.put(day, i);
+                        addToCount(totalWordCountByDay_Refugee, day, wordCount_Refugee);
                         // Syria
-                        if (totalSyriaWordCountByDay.containsKey(day)) {
-                            i = totalSyriaWordCountByDay.get(day);
-                            i += syriaWordCount;
-                        } else {
-                            i = syriaWordCount;
-                        }
-                        totalSyriaWordCountByDay.put(day, i);
+                        addToCount(totalWordCountByDay_Syria, day, wordCount_Syria);
                         // Brexit
-                        if (totalBrexitWordCountByDay.containsKey(day)) {
-                            i = totalBrexitWordCountByDay.get(day);
-                            i += brexitWordCount;
-                        } else {
-                            i = brexitWordCount;
-                        }
-                        totalBrexitWordCountByDay.put(day, i);
+                        addToCount(totalWordCountByDay_Brexit, day, wordCount_Brexit);
+                        // Brexit
+                        addToCount(totalWordCountByDay_MigrantCrisis, day, wordCount_MigrantCrisis);
                         //System.out.println(date);
                         /**
                          * Store DateHeadline's for those articles on Saturdays
                          * that contain the word "syria".
                          */
-                        if (syriaWordCount > 0) {
+                        if (wordCount_Syria > 0) {
                             if (date.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
                                 syriaDateHeadlines.add(new DateHeadline(date, title));
                             }
                         }
-                        refugeeWordCount = 0;
-                        syriaWordCount = 0;
-                        brexitWordCount = 0;
+                        wordCount_Refugee = 0;
+                        wordCount_Syria = 0;
+                        wordCount_Brexit = 0;
+                        wordCount_MigrantCrisis = 0;
                         date0 = date;
                     }
                 }
             }
         }
-        totals[0] = totalRefugeeWordCount;
-        totals[1] = totalSyriaWordCount;
-        totals[2] = totalBrexitWordCount;
-        result[1] = totalRefugeeWordCountByDay;
-        result[2] = totalSyriaWordCountByDay;
-        result[3] = totalBrexitWordCountByDay;
-        result[4] = syriaDateHeadlines;
+        totals[0] = totalWordCount_Refugee;
+        totals[1] = totalWordCount_Syria;
+        totals[2] = totalWordCount_Brexit;
+        totals[3] = totalWordCount_MigrantCrisis;
+        result[1] = totalWordCountByDay_Refugee;
+        result[2] = totalWordCountByDay_Syria;
+        result[3] = totalWordCountByDay_Brexit;
+        result[4] = totalWordCountByDay_MigrantCrisis;
+        result[5] = syriaDateHeadlines;
         return result;
+    }
+
+    public void addToCount(
+            TreeMap<DayOfWeek, Integer> totalWordCountOnDay,
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDays) {
+        DayOfWeek day;
+        int i;
+        Iterator<DayOfWeek> ite = totalWordCountOnDay.keySet().iterator();
+        while (ite.hasNext()) {
+            day = ite.next();
+            if (grandTotalWordCountOnDays.containsKey(day)) {
+                i = grandTotalWordCountOnDays.get(day);
+                i += totalWordCountOnDay.get(day);
+            } else {
+                i = totalWordCountOnDay.get(day);
+            }
+            grandTotalWordCountOnDays.put(day, i);
+        }
+    }
+
+    public void addToCount(
+            TreeMap<DayOfWeek, Integer> wordCount,
+            DayOfWeek day, int count) {
+        int i;
+        if (wordCount.containsKey(day)) {
+            i = wordCount.get(day);
+            i += count;
+        } else {
+            i = count;
+        }
+        wordCount.put(day, i);
     }
 
     /**
@@ -375,15 +381,9 @@ public class Text_Processor {
      * @return
      */
     int getWordCount(String word, String line) {
+        String lowerCaseLine = Generic_StaticString.getLowerCase(line);
         int result = 0;
-        // word
-        result += line.split(word).length - 1;
-        // word with capital first letter
-        result += line.split(
-                Generic_StaticString.getUpperCase(word.substring(0, 1))
-                + word.substring(1, word.length() - 1)).length - 1;
-        // word all capitals
-        result += line.split(Generic_StaticString.getUpperCase(word)).length - 1;
+        result += lowerCaseLine.split(word).length - 1;
         return result;
     }
 
