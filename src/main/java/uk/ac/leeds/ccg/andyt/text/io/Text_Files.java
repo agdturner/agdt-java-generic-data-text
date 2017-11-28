@@ -25,6 +25,7 @@ import uk.ac.leeds.ccg.andyt.generic.io.Generic_Files;
 public class Text_Files extends Generic_Files {
 
     private File LexisNexisInputDataDir;
+    private File LexisNexisOutputDataDir;
 
     protected Text_Files() {
     }
@@ -44,4 +45,14 @@ public class Text_Files extends Generic_Files {
         return LexisNexisInputDataDir;
     }
 
+    /**
+     * @return the LexisNexisInputDataDir
+     */
+    public File getLexisNexisOutputDataDir() {
+        if (LexisNexisOutputDataDir == null) {
+            LexisNexisOutputDataDir = new File(
+                    getOutputDataDir(), "LexisNexis");
+        }
+        return LexisNexisOutputDataDir;
+    }
 }

@@ -19,6 +19,7 @@ package uk.ac.leeds.ccg.andyt.text.process;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.Month;
@@ -81,18 +82,30 @@ public class Text_Processor {
         String dataDirName;
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
+        String dirname;
+        //dirname = "LexisNexis-20171127T155442Z-001";
+        dirname = "LexisNexis-20171122T195223Z-001";
+
         File inputDir;
+        File outputDir;
         inputDir = new File(
                 Files.getLexisNexisInputDataDir(),
-                //                "LexisNexis-20171127T155442Z-001/LexisNexis");
-                "LexisNexis-20171122T195223Z-001/LexisNexis");
+                dirname + "/LexisNexis");
         System.out.println(inputDir);
+        outputDir = new File(
+                Files.getLexisNexisOutputDataDir(),
+                dirname + "/LexisNexis");
+        if (outputDir.exists()) {
+            outputDir.mkdirs();
+        }
 
         /**
          * Declare variables
          */
         int[] grandTotalWordCounts;
         HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalWordCountOnDays;
+        int[] grandTotalArticleCountsForWords;
+        HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalArticleCountsForWordsOnDays;
         int i;
         String word;
         Iterator<String> ite;
@@ -101,6 +114,10 @@ public class Text_Processor {
          * Process the data going through each input file. Currently the output
          * is simply printed to std.out.
          */
+        String name;
+        File outFile;
+        PrintWriter pwCounts;
+        PrintWriter pwHeadlines = null;
         File[] inputs0;
         File[] inputs1;
         inputs0 = inputDir.listFiles();
@@ -109,12 +126,22 @@ public class Text_Processor {
          * inputDir contains only directories and no files.
          */
         for (File input0 : inputs0) {
+            name = input0.getName();
+            outFile = Generic_StaticIO.createNewFile(outputDir, name + "Counts.txt");
+            pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
+            if (writeHeadlines) {
+                outFile = Generic_StaticIO.createNewFile(
+                        outputDir,
+                        name + "HeadlinesForArticlesContaining_Syria.txt");
+                pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
+            }
             /**
              * Print out the name of the directory/File.
              */
             //System.out.println(input0);
             System.out.println("---------------------------");
-            System.out.println(input0.getName());
+            System.out.println(name);
+            //pw.println(name);
             System.out.println("---------------------------");
             /**
              * Iterate through all the files in the directory.
@@ -125,14 +152,18 @@ public class Text_Processor {
              * Initialise results.
              */
             grandTotalWordCounts = new int[words.size()];
+            grandTotalArticleCountsForWords = new int[words.size()];
             grandTotalWordCountOnDays = new HashMap<>();
+            grandTotalArticleCountsForWordsOnDays = new HashMap<>();
             i = 0;
             ite = words.iterator();
             while (ite.hasNext()) {
                 word = ite.next();
                 grandTotalWordCounts[i] = 0;
+                grandTotalArticleCountsForWords[i] = 0;
                 i++;
                 grandTotalWordCountOnDays.put(word, new TreeMap<>());
+                grandTotalArticleCountsForWordsOnDays.put(word, new TreeMap<>());
             }
             /**
              * Iterate through all the subdirectories in inputDir. It is known
@@ -140,7 +171,8 @@ public class Text_Processor {
              * associated directories. For the purposes of this processing, only
              * the HTML files are processed.
              */
-            int[] totals;
+            int[] totalWordCounts;
+            int[] totalWordCountsInArticles;
             Object[] results;
             for (File input1 : inputs1) {
                 //System.out.println(input1);
@@ -158,21 +190,27 @@ public class Text_Processor {
                      * results.
                      */
                     // Process counts.
-                    totals = (int[]) results[0];
+                    totalWordCounts = (int[]) results[0];
+                    totalWordCountsInArticles = (int[]) results[1];
                     i = 0;
                     ite = words.iterator();
                     while (ite.hasNext()) {
                         word = ite.next();
-                        grandTotalWordCounts[i] += totals[i];
+                        grandTotalWordCounts[i] += totalWordCounts[i];
+                        grandTotalArticleCountsForWords[i] += totalWordCountsInArticles[i];
                         i++;
                         addToCount(
-                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[1]).get(word),
+                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[2]).get(word),
                                 grandTotalWordCountOnDays.get(word));
+                        addToCount(
+                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[3]).get(word),
+                                grandTotalArticleCountsForWordsOnDays.get(word));
+
                     }
                     if (writeHeadlines) {
                         // Process dates and headlines writing out a list.
                         TreeSet<DateHeadline> syriaDateHeadlines;
-                        syriaDateHeadlines = (TreeSet<DateHeadline>) results[2];
+                        syriaDateHeadlines = (TreeSet<DateHeadline>) results[4];
                         Iterator<DateHeadline> ite2;
                         DateHeadline dh;
                         ite2 = syriaDateHeadlines.iterator();
@@ -191,15 +229,25 @@ public class Text_Processor {
             while (ite.hasNext()) {
                 word = ite.next();
                 System.out.println(word + " word count " + grandTotalWordCounts[i]);
+                pwCounts.println(word + " word count " + grandTotalWordCounts[i]);
+                System.out.println(word + " article count " + grandTotalArticleCountsForWords[i]);
+                pwCounts.println(word + " article count " + grandTotalArticleCountsForWords[i]);
                 i++;
-                printWordCountOnDay(word, grandTotalWordCountOnDays.get(word));
+                printWordCountOnDay(pwCounts, word, 0, grandTotalWordCountOnDays.get(word));
+                printWordCountOnDay(pwCounts, word, 1, grandTotalArticleCountsForWordsOnDays.get(word));
             }
             System.out.println("---------------------------");
+            pwCounts.close();
+            if (writeHeadlines) {
+                pwHeadlines.close();
+            }
         }
     }
 
     void printWordCountOnDay(
+            PrintWriter pw,
             String word,
+            int type,
             TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay) {
         Iterator<DayOfWeek> ite;
         DayOfWeek day;
@@ -208,7 +256,13 @@ public class Text_Processor {
         while (ite.hasNext()) {
             day = ite.next();
             i = grandTotalWordCountOnDay.get(day);
-            System.out.println(word + " word count on " + day + " " + i);
+            if (type == 0) {
+                System.out.println(word + " word count on " + day + " " + i);
+                pw.println(word + " word count on " + day + " " + i);
+            } else {
+                System.out.println(word + " article count on " + day + " " + i);
+                pw.println(word + " article count on " + day + " " + i);
+            }
         }
     }
 
@@ -231,7 +285,7 @@ public class Text_Processor {
      * @return
      */
     public Object[] parseHTML(ArrayList<String> words, File input) {
-        Object[] result = new Object[3];
+        Object[] result = new Object[5];
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
         BufferedReader br;
@@ -242,9 +296,14 @@ public class Text_Processor {
         n = words.size();
         int[] totalWordCounts = new int[n];
         result[0] = totalWordCounts;
+        int[] totalArticleCountsForWords = new int[n];
+        result[1] = totalArticleCountsForWords;
         int[] wordCounts = new int[n];
+        int[] articleCountsForWords = new int[n];
         TreeMap<String, TreeMap<DayOfWeek, Integer>> totalWordCountByDay;
         totalWordCountByDay = new TreeMap<>();
+        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalArticleCountForWordsByDay;
+        totalArticleCountForWordsByDay = new TreeMap<>();
         int i;
         String word;
         Iterator<String> ite;
@@ -253,9 +312,12 @@ public class Text_Processor {
         while (ite.hasNext()) {
             word = ite.next();
             totalWordCounts[i] = 0;
+            totalArticleCountsForWords[i] = 0;
             wordCounts[i] = 0;
+            articleCountsForWords[i] = 0;
             i++;
             totalWordCountByDay.put(word, new TreeMap<>());
+            totalArticleCountForWordsByDay.put(word, new TreeMap<>());
         }
         LocalDate date0 = null;
         boolean gotFirstDate = false;
@@ -319,6 +381,10 @@ public class Text_Processor {
                             word = ite.next();
                             // Add to word counts
                             totalWordCounts[i] += wordCounts[i];
+                            if (wordCounts[i] > 0) {
+                                totalArticleCountsForWords[i]++;
+                                addToCount(totalArticleCountForWordsByDay.get(word), day, 1);
+                            }
                             addToCount(totalWordCountByDay.get(word), day, wordCounts[i]);
                             i++;
                         }
@@ -339,8 +405,9 @@ public class Text_Processor {
                 }
             }
         }
-        result[1] = totalWordCountByDay;
-        result[2] = syriaDateHeadlines;
+        result[2] = totalWordCountByDay;
+        result[3] = totalArticleCountForWordsByDay;
+        result[4] = syriaDateHeadlines;
         return result;
     }
 
