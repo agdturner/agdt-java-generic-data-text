@@ -127,7 +127,7 @@ public class Text_Processor {
          */
         for (File input0 : inputs0) {
             name = input0.getName();
-            outFile = Generic_StaticIO.createNewFile(outputDir, name + "Counts.txt");
+            outFile = Generic_StaticIO.createNewFile(outputDir, name + "Counts.csv");
             pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
             if (writeHeadlines) {
                 outFile = Generic_StaticIO.createNewFile(
