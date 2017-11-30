@@ -85,7 +85,6 @@ public class Text_Processor {
         String dirname;
         //dirname = "LexisNexis-20171127T155442Z-001";
         dirname = "LexisNexis-20171122T195223Z-001";
-
         File inputDir;
         File outputDir;
         inputDir = new File(
@@ -102,6 +101,8 @@ public class Text_Processor {
         /**
          * Declare variables
          */
+        ArrayList<DayOfWeek> mondayToSaturday;
+        mondayToSaturday = getMondayToSaturday();
         int[] grandTotalWordCounts;
         HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalWordCountOnDays;
         int[] grandTotalArticleCountsForWords;
@@ -109,7 +110,6 @@ public class Text_Processor {
         int i;
         String word;
         Iterator<String> ite;
-
         /**
          * Process the data going through each input file. Currently the output
          * is simply printed to std.out.
@@ -224,17 +224,55 @@ public class Text_Processor {
             /**
              * Write out summaries of counts.
              */
+            /**
+             * Write header
+             */
+            System.out.print("term, total word count, total article count, ");
+            pwCounts.print("term, total word count, total article count, ");
+//                System.out.println(word + " word count on " + day + " " + i);
+//                pw.println(word + " word count on " + day + " " + i);
+            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay;
+            TreeMap<DayOfWeek, Integer> grandTotalArticleCountsForWordsOnDay;
+            Iterator<DayOfWeek> ite2;
+            DayOfWeek day;
+            ite2 = mondayToSaturday.iterator();
+            while (ite2.hasNext()) {
+                day = ite2.next();
+                System.out.print(", word count on " + day);
+                pwCounts.print(", word count on " + day);
+            }
+            ite2 = mondayToSaturday.iterator();
+            while (ite2.hasNext()) {
+                day = ite2.next();
+                System.out.print(", article count on " + day);
+                pwCounts.print(", article count on " + day);
+            }
+            System.out.println();
+            pwCounts.println();
+            /**
+             * Write lines
+             */
             i = 0;
             ite = words.iterator();
             while (ite.hasNext()) {
                 word = ite.next();
-                System.out.println(word + " word count " + grandTotalWordCounts[i]);
-                pwCounts.println(word + " word count " + grandTotalWordCounts[i]);
-                System.out.println(word + " article count " + grandTotalArticleCountsForWords[i]);
-                pwCounts.println(word + " article count " + grandTotalArticleCountsForWords[i]);
+                grandTotalWordCountOnDay = grandTotalWordCountOnDays.get(word);
+                grandTotalArticleCountsForWordsOnDay = grandTotalArticleCountsForWordsOnDays.get(word);
+//                System.out.println(word + " word count " + grandTotalWordCounts[i]);
+//                pwCounts.println(word + " word count " + grandTotalWordCounts[i]);
+//                System.out.println(word + " article count " + grandTotalArticleCountsForWords[i]);
+//                pwCounts.println(word + " article count " + grandTotalArticleCountsForWords[i]);
+                System.out.print(word);
+                pwCounts.print(word);
+                System.out.print(", " + grandTotalWordCounts[i]);
+                pwCounts.print(", " + grandTotalWordCounts[i]);
+                System.out.print(", " + grandTotalArticleCountsForWords[i]);
+                pwCounts.print(", " + grandTotalArticleCountsForWords[i]);
                 i++;
-                printWordCountOnDay(pwCounts, word, 0, grandTotalWordCountOnDays.get(word));
-                printWordCountOnDay(pwCounts, word, 1, grandTotalArticleCountsForWordsOnDays.get(word));
+                printWordCountOnDay(pwCounts, mondayToSaturday, word, grandTotalWordCountOnDays.get(word));
+                printWordCountOnDay(pwCounts, mondayToSaturday, word, grandTotalArticleCountsForWordsOnDays.get(word));
+                System.out.println();
+                pwCounts.println();
             }
             System.out.println("---------------------------");
             pwCounts.close();
@@ -246,24 +284,36 @@ public class Text_Processor {
 
     void printWordCountOnDay(
             PrintWriter pw,
+            ArrayList<DayOfWeek> mondayToSaturday,
             String word,
-            int type,
             TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay) {
         Iterator<DayOfWeek> ite;
         DayOfWeek day;
-        int i;
-        ite = grandTotalWordCountOnDay.keySet().iterator();
+        Integer i;
+        ite = mondayToSaturday.iterator();
         while (ite.hasNext()) {
             day = ite.next();
             i = grandTotalWordCountOnDay.get(day);
-            if (type == 0) {
-                System.out.println(word + " word count on " + day + " " + i);
-                pw.println(word + " word count on " + day + " " + i);
+            if (i == null) {
+                System.out.print(", 0");
+                pw.print(", 0");
             } else {
-                System.out.println(word + " article count on " + day + " " + i);
-                pw.println(word + " article count on " + day + " " + i);
+                System.out.print(", " + i);
+                pw.print(", " + i);
             }
         }
+    }
+
+    ArrayList<DayOfWeek> getMondayToSaturday() {
+        ArrayList<DayOfWeek> result;
+        result = new ArrayList<>();
+        result.add(DayOfWeek.MONDAY);
+        result.add(DayOfWeek.TUESDAY);
+        result.add(DayOfWeek.WEDNESDAY);
+        result.add(DayOfWeek.THURSDAY);
+        result.add(DayOfWeek.FRIDAY);
+        result.add(DayOfWeek.SATURDAY);
+        return result;
     }
 
     /**
