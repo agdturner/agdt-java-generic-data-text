@@ -91,8 +91,8 @@ public class Text_Processor2 {
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
         String dirname;
-        //dirname = "LexisNexis-20171127T155442Z-001";
-        dirname = "LexisNexis-20171122T195223Z-001";
+        dirname = "LexisNexis-20171127T155442Z-001";
+        //dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outputDir;
         inputDir = new File(
@@ -102,7 +102,7 @@ public class Text_Processor2 {
         outputDir = new File(
                 Files.getLexisNexisOutputDataDir(),
                 dirname + "/LexisNexis");
-        if (outputDir.exists()) {
+        if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
 
@@ -324,8 +324,19 @@ public class Text_Processor2 {
         return result;
     }
 
-    void parseNode(Node node) {
+    boolean inExpressArticle;
+    boolean endExpressArticle;
+
+    /**
+     * Iteratively parse through nodes.
+     *
+     * @param node
+     */
+    boolean isExpressNode(Node node) {
         //System.out.println(node.toString());
+        String nodeName;
+        nodeName = node.nodeName();
+        System.out.println("nodeName " + nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -342,8 +353,290 @@ public class Text_Processor2 {
             value = nodeAttribute.getValue();
             System.out.println("key " + key);
             System.out.println("value " + value);
+            if (value.equalsIgnoreCase("The Express")) {
+                return true;
+                //parseExpressNode(node);
+            }
             nodeAttributeIndex++;
         }
+        return false;
+    }
+
+    String date;
+    boolean gotDate;
+    int returnCount;
+
+    /**
+     * @param node
+     */
+    boolean getDate(Node node) {
+        //System.out.println(node.toString());
+        String nodeName;
+        nodeName = node.nodeName();
+        System.out.println("nodeName " + nodeName);
+        int nodeAttributeIndex;
+        Attributes nodeAttributes;
+        Iterator<Attribute> iteA;
+        Attribute nodeAttribute;
+        String key;
+        String value;
+        nodeAttributeIndex = 0;
+        nodeAttributes = node.attributes();
+        iteA = nodeAttributes.iterator();
+        while (iteA.hasNext()) {
+            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            nodeAttribute = iteA.next();
+            key = nodeAttribute.getKey();
+            value = nodeAttribute.getValue();
+            System.out.println("key " + key);
+            System.out.println("value " + value);
+            if (key.equalsIgnoreCase("#text")) {
+                if (!value.equalsIgnoreCase("\n")) {
+                    date += value;
+                    if (value.endsWith("day")) {
+                        return true;
+                    }
+                }
+            }
+            nodeAttributeIndex++;
+        }
+        return false;
+    }
+
+    String title;
+    boolean startTitle;
+    boolean gotTitle;
+
+    /**
+     * @param node
+     */
+    boolean getTitle(Node node) {
+        //System.out.println(node.toString());
+        String nodeName;
+        nodeName = node.nodeName();
+        System.out.println("nodeName " + nodeName);
+        int nodeAttributeIndex;
+        Attributes nodeAttributes;
+        Iterator<Attribute> iteA;
+        Attribute nodeAttribute;
+        String key;
+        String value;
+        nodeAttributeIndex = 0;
+        nodeAttributes = node.attributes();
+        iteA = nodeAttributes.iterator();
+        while (iteA.hasNext()) {
+            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            nodeAttribute = iteA.next();
+            key = nodeAttribute.getKey();
+            value = nodeAttribute.getValue();
+            System.out.println("key " + key);
+            System.out.println("value " + value);
+            if (!startTitle) {
+                if (value.equalsIgnoreCase("c7")) {
+                    startTitle = true;
+                }
+            } else {
+                if (key.equalsIgnoreCase("#text")) {
+                    title += value;
+                }
+                if (value.equalsIgnoreCase("c6")) {
+                    return true;
+                }
+            }
+            nodeAttributeIndex++;
+        }
+        return false;
+    }
+
+    String section;
+    boolean startSection;
+    boolean gotSection;
+
+    /**
+     * Iteratively parse through nodes.
+     *
+     * @param node
+     */
+    boolean getSection(Node node) {
+        System.out.println("Node " + node.toString());
+        String nodeName;
+        nodeName = node.nodeName();
+        System.out.println("nodeName " + nodeName);
+        int nodeAttributeIndex;
+        Attributes nodeAttributes;
+        Iterator<Attribute> iteA;
+        Attribute nodeAttribute;
+        String key;
+        String value;
+        nodeAttributeIndex = 0;
+        nodeAttributes = node.attributes();
+        iteA = nodeAttributes.iterator();
+        while (iteA.hasNext()) {
+            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            nodeAttribute = iteA.next();
+            key = nodeAttribute.getKey();
+            value = nodeAttribute.getValue();
+            System.out.println("key " + key);
+            System.out.println("value " + value);
+            if (!startSection) {
+                if (value.equalsIgnoreCase("SECTION: ")) {
+                    startSection = true;
+                }
+            } else {
+                if (key.equalsIgnoreCase("#text")) {
+                    section += value;
+                    return true;
+                }
+            }
+            nodeAttributeIndex++;
+        }
+        return false;
+    }
+
+    String length;
+    boolean startLength;
+    boolean gotLength;
+
+    /**
+     * Iteratively parse through nodes.
+     *
+     * @param node
+     */
+    boolean getLength(Node node) {
+        System.out.println("Node " + node.toString());
+        String nodeName;
+        nodeName = node.nodeName();
+        System.out.println("nodeName " + nodeName);
+        int nodeAttributeIndex;
+        Attributes nodeAttributes;
+        Iterator<Attribute> iteA;
+        Attribute nodeAttribute;
+        String key;
+        String value;
+        nodeAttributeIndex = 0;
+        nodeAttributes = node.attributes();
+        iteA = nodeAttributes.iterator();
+        while (iteA.hasNext()) {
+            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            nodeAttribute = iteA.next();
+            key = nodeAttribute.getKey();
+            value = nodeAttribute.getValue();
+            System.out.println("key " + key);
+            System.out.println("value " + value);
+            if (!startLength) {
+                if (value.equalsIgnoreCase("LENGTH: ")) {
+                    startLength = true;
+                }
+            } else {
+                if (key.equalsIgnoreCase("#text")) {
+                    length += value;
+                    return true;
+                }
+            }
+            nodeAttributeIndex++;
+        }
+        return false;
+    }
+    
+    String article;
+    boolean startArticle;
+    boolean gotArticle;
+
+    /**
+     * Iteratively parse through nodes.
+     *
+     * @param node
+     */
+    boolean getArticle(Node node) {
+        System.out.println("Node " + node.toString());
+        if (node.toString().equalsIgnoreCase("LOAD-DATE ")) {
+            return true;
+        }
+        String nodeName;
+        nodeName = node.nodeName();
+        System.out.println("nodeName " + nodeName);
+        // end at div
+        int nodeAttributeIndex;
+        Attributes nodeAttributes;
+        Iterator<Attribute> iteA;
+        Attribute nodeAttribute;
+        String key;
+        String value;
+
+//        if (node.childNodeSize() > 0) {
+//            List<Node> childNodes;
+//            childNodes = node.childNodes();
+//            Node childNode;
+//            Iterator<Node> ite;
+//            ite = childNodes.iterator();
+//            while (ite.hasNext()) {
+//                childNode = ite.next();
+//                System.out.println("Node " + childNode.toString());
+////                if (childNode.toString().equalsIgnoreCase("SECTION:")) {
+////                    startSection = true;
+////                }
+//                nodeAttributeIndex = 0;
+//                nodeAttributes = node.attributes();
+//                iteA = nodeAttributes.iterator();
+//                while (iteA.hasNext()) {
+//                    System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+//                    nodeAttribute = iteA.next();
+//                    key = nodeAttribute.getKey();
+//                    value = nodeAttribute.getValue();
+//                    System.out.println("key " + key);
+//                    System.out.println("value " + value);
+//                    if (!startLength) {
+//                        if (value.equalsIgnoreCase("c7")) {
+//                            startLength = true;
+//                        }
+//                    } else {
+//                        if (key.equalsIgnoreCase("#text")) {
+//                            length += value;
+//                            //if (value.endsWith("day")) {
+//                            //    return true;
+//                            //}
+//                        }
+////                if (value.equalsIgnoreCase("c6")) {
+////                    return true;
+////                }
+//                    }
+//                    nodeAttributeIndex++;
+//                }
+//
+//            }
+//        }
+
+        nodeAttributeIndex = 0;
+        nodeAttributes = node.attributes();
+        iteA = nodeAttributes.iterator();
+        while (iteA.hasNext()) {
+            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            nodeAttribute = iteA.next();
+            key = nodeAttribute.getKey();
+            value = nodeAttribute.getValue();
+            System.out.println("key " + key);
+            System.out.println("value " + value);
+                if (key.equalsIgnoreCase("#text")) {
+                    if (!value.equalsIgnoreCase("\n")) {
+                        if (value.equalsIgnoreCase("LOAD-DATE: ")){
+                            return true;
+                        }
+                        article += value + " ";
+                    }
+                    //return true;
+                    //if (value.endsWith("day")) {
+                    //    return true;
+                    //}
+                }
+//                if (value.equalsIgnoreCase("c6")) {
+//                    return true;
+//                }
+            nodeAttributeIndex++;
+        }
+        return false;
+    }
+    
+    void parseChildNodes(Node node) {
         if (node.childNodeSize() > 0) {
             List<Node> childNodes;
             childNodes = node.childNodes();
@@ -352,7 +645,7 @@ public class Text_Processor2 {
             ite = childNodes.iterator();
             while (ite.hasNext()) {
                 childNode = ite.next();
-                parseNode(childNode);
+                isExpressNode(childNode);
             }
         }
     }
@@ -376,6 +669,9 @@ public class Text_Processor2 {
      * @return
      */
     public Object[] parseHTML(ArrayList<String> words, File input) {
+        inExpressArticle = false;
+        gotDate = false;
+        gotTitle = false;
         Object[] result = new Object[5];
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
@@ -413,6 +709,8 @@ public class Text_Processor2 {
         //Elements links = doc.getElementsByTag("div");
         ite = elements.iterator();
         while (ite.hasNext()) {
+
+            // if inExpress then do the next thing here...
             System.out.println("elementIndex " + elementIndex);
             element = ite.next();
             if (element.hasText()) {
@@ -438,8 +736,38 @@ public class Text_Processor2 {
             while (iteN.hasNext()) {
                 System.out.println("nodeIndex " + nodeIndex);
                 node = iteN.next();
-                parseNode(node);
+                if (inExpressArticle) {
+                    if (gotDate) {
+                        if (gotTitle) {
+                            if (gotSection) {
+                                if (gotLength){
+                                    gotArticle = getArticle(node);
+                                } else {
+                                    gotLength = getLength(node);
+                                    article = "";
+                                }
+                            } else {
+                                gotSection = getSection(node);
+                                length = "";
+                            }
+                        } else {
+                            //System.out.println("Got date");
+                            gotTitle = getTitle(node);
+                            section = "";
+                        }
+                    } else {
+                        //System.out.println("In Express Article");
+                        gotDate = getDate(node);
+                        title = "";
+                    }
+                } else {
+                    inExpressArticle = isExpressNode(node);
+                    date = "";
+                }
                 nodeIndex++;
+            }
+            if (gotArticle) {
+                System.out.println("We have everything to process now for this article... Process and reset");
             }
             elementIndex++;
         }
