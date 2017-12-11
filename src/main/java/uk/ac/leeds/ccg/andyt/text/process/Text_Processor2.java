@@ -65,6 +65,8 @@ public class Text_Processor2 {
         new Text_Processor2().run();
     }
 
+                    String GuardianAPIKey;
+
     /**
      * This is the main processing method.
      */
@@ -72,8 +74,9 @@ public class Text_Processor2 {
 
         boolean writeHeadlines;
         writeHeadlines = true;
-        writeHeadlines = false;
+        //writeHeadlines = false;
 
+        
         /**
          * Initialise words
          */
@@ -91,8 +94,8 @@ public class Text_Processor2 {
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
         String dirname;
-        dirname = "LexisNexis-20171127T155442Z-001";
-        //dirname = "LexisNexis-20171122T195223Z-001";
+        //dirname = "LexisNexis-20171127T155442Z-001";
+        dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outputDir;
         inputDir = new File(
@@ -105,6 +108,9 @@ public class Text_Processor2 {
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
+
+        // Get GuardianAPIKey
+        GuardianAPIKey = getGuardianAPIKey();
 
         /**
          * Declare variables
@@ -140,8 +146,9 @@ public class Text_Processor2 {
             if (writeHeadlines) {
                 outFile = Generic_StaticIO.createNewFile(
                         outputDir,
-                        name + "HeadlinesForArticlesContaining_Syria.txt");
+                        name + "HeadlinesForArticlesContaining_Syria.csv");
                 pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
+                pwHeadlines.println("Date, Section, Length, Title");
             }
             /**
              * Print out the name of the directory/File.
@@ -192,6 +199,7 @@ public class Text_Processor2 {
                     /**
                      * Parse the HTML file and obtain part of the result.
                      */
+                    //if (input1.getParentFile().getName().startsWith("LexisNexis - The G")) {
                     results = parseHTML(words, input1);
                     /**
                      * Combine the results from parsing this file to the overall
@@ -217,16 +225,20 @@ public class Text_Processor2 {
                     }
                     if (writeHeadlines) {
                         // Process dates and headlines writing out a list.
-                        TreeSet<DateHeadline> syriaDateHeadlines;
-                        syriaDateHeadlines = (TreeSet<DateHeadline>) results[4];
-                        Iterator<DateHeadline> ite2;
-                        DateHeadline dh;
+                        TreeSet<DateOutlineDetails> syriaDateHeadlines;
+                        syriaDateHeadlines = (TreeSet<DateOutlineDetails>) results[4];
+                        Iterator<DateOutlineDetails> ite2;
+                        DateOutlineDetails dh;
                         ite2 = syriaDateHeadlines.iterator();
                         while (ite2.hasNext()) {
                             dh = ite2.next();
-                            System.out.println(dh.LD + " " + dh.Headline);
+                            String s;
+                            s = dh.LD + ",\"" + dh.Section + "\",\"" + dh.Length + "\",\"" + dh.Headline + "\"";
+                            System.out.println(s);
+                            pwHeadlines.println(s);
                         }
                     }
+                    //}
                 }
             }
             /**
@@ -235,8 +247,8 @@ public class Text_Processor2 {
             /**
              * Write header
              */
-            System.out.print("term, total word count, total article count, ");
-            pwCounts.print("term, total word count, total article count, ");
+            System.out.print("term, total word count, total article count");
+            pwCounts.print("term, total word count, total article count");
 //                System.out.println(word + " word count on " + day + " " + i);
 //                pw.println(word + " word count on " + day + " " + i);
             TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay;
@@ -268,8 +280,8 @@ public class Text_Processor2 {
                 grandTotalArticleCountsForWordsOnDay = grandTotalArticleCountsForWordsOnDays.get(word);
 //                System.out.println(word + " word count " + grandTotalWordCounts[i]);
 //                pwCounts.println(word + " word count " + grandTotalWordCounts[i]);
-//                System.out.println(word + " article count " + grandTotalArticleCountsForWords[i]);
-//                pwCounts.println(word + " article count " + grandTotalArticleCountsForWords[i]);
+//                System.out.println(word + " Article count " + grandTotalArticleCountsForWords[i]);
+//                pwCounts.println(word + " Article count " + grandTotalArticleCountsForWords[i]);
                 System.out.print(word);
                 pwCounts.print(word);
                 System.out.print(", " + grandTotalWordCounts[i]);
@@ -324,19 +336,19 @@ public class Text_Processor2 {
         return result;
     }
 
-    boolean inExpressArticle;
-    boolean endExpressArticle;
+    boolean inArticle;
+    boolean isExpressArticle;
 
     /**
      * Iteratively parse through nodes.
      *
      * @param node
      */
-    boolean isExpressNode(Node node) {
+    boolean isArticleNode(Node node) {
         //System.out.println(node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName " + nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -347,13 +359,18 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            System.out.println("key " + key);
-            System.out.println("value " + value);
-            if (value.equalsIgnoreCase("The Express")) {
+            //System.out.println("key " + key);
+            //System.out.println("value " + value);
+            if (value.equalsIgnoreCase("The Express") || value.equalsIgnoreCase("The Guardian")) {
+                if (value.equalsIgnoreCase("The Guardian")) {
+                    isExpressArticle = false;
+                } else {
+                    isExpressArticle = true;
+                }
                 return true;
                 //parseExpressNode(node);
             }
@@ -362,7 +379,7 @@ public class Text_Processor2 {
         return false;
     }
 
-    String date;
+    String Date;
     boolean gotDate;
     int returnCount;
 
@@ -373,7 +390,7 @@ public class Text_Processor2 {
         //System.out.println(node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName " + nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -384,17 +401,23 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            System.out.println("key " + key);
-            System.out.println("value " + value);
+            //System.out.println("key " + key);
+            //System.out.println("value " + value);
             if (key.equalsIgnoreCase("#text")) {
                 if (!value.equalsIgnoreCase("\n")) {
-                    date += value;
-                    if (value.endsWith("day")) {
-                        return true;
+                    Date += value;
+                    if (isExpressArticle) {
+                        if (value.endsWith("day")) {
+                            return true;
+                        }
+                    } else {
+                        if (value.endsWith("GMT")) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -403,7 +426,7 @@ public class Text_Processor2 {
         return false;
     }
 
-    String title;
+    String Title;
     boolean startTitle;
     boolean gotTitle;
 
@@ -414,7 +437,7 @@ public class Text_Processor2 {
         //System.out.println(node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName " + nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -425,19 +448,19 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            System.out.println("key " + key);
-            System.out.println("value " + value);
+            //System.out.println("key " + key);
+            //System.out.println("value " + value);
             if (!startTitle) {
                 if (value.equalsIgnoreCase("c7")) {
                     startTitle = true;
                 }
             } else {
                 if (key.equalsIgnoreCase("#text")) {
-                    title += value;
+                    Title += value;
                 }
                 if (value.equalsIgnoreCase("c6")) {
                     return true;
@@ -448,7 +471,7 @@ public class Text_Processor2 {
         return false;
     }
 
-    String section;
+    String Section;
     boolean startSection;
     boolean gotSection;
 
@@ -458,10 +481,10 @@ public class Text_Processor2 {
      * @param node
      */
     boolean getSection(Node node) {
-        System.out.println("Node " + node.toString());
+        //System.out.println("Node " + node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName " + nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -472,19 +495,19 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            System.out.println("key " + key);
-            System.out.println("value " + value);
+            //System.out.println("key " + key);
+            //System.out.println("value " + value);
             if (!startSection) {
                 if (value.equalsIgnoreCase("SECTION: ")) {
                     startSection = true;
                 }
             } else {
                 if (key.equalsIgnoreCase("#text")) {
-                    section += value;
+                    Section += value;
                     return true;
                 }
             }
@@ -493,7 +516,7 @@ public class Text_Processor2 {
         return false;
     }
 
-    String length;
+    String Length;
     boolean startLength;
     boolean gotLength;
 
@@ -503,10 +526,10 @@ public class Text_Processor2 {
      * @param node
      */
     boolean getLength(Node node) {
-        System.out.println("Node " + node.toString());
+        //System.out.println("Node " + node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName " + nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -517,19 +540,19 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            System.out.println("key " + key);
-            System.out.println("value " + value);
+            //System.out.println("key " + key);
+            //System.out.println("value " + value);
             if (!startLength) {
                 if (value.equalsIgnoreCase("LENGTH: ")) {
                     startLength = true;
                 }
             } else {
                 if (key.equalsIgnoreCase("#text")) {
-                    length += value;
+                    Length += value;
                     return true;
                 }
             }
@@ -537,8 +560,8 @@ public class Text_Processor2 {
         }
         return false;
     }
-    
-    String article;
+
+    String Article;
     boolean startArticle;
     boolean gotArticle;
 
@@ -548,13 +571,13 @@ public class Text_Processor2 {
      * @param node
      */
     boolean getArticle(Node node) {
-        System.out.println("Node " + node.toString());
+        //System.out.println("Node " + node.toString());
         if (node.toString().equalsIgnoreCase("LOAD-DATE ")) {
             return true;
         }
         String nodeName;
         nodeName = node.nodeName();
-        System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName " + nodeName);
         // end at div
         int nodeAttributeIndex;
         Attributes nodeAttributes;
@@ -591,7 +614,7 @@ public class Text_Processor2 {
 //                        }
 //                    } else {
 //                        if (key.equalsIgnoreCase("#text")) {
-//                            length += value;
+//                            Length += value;
 //                            //if (value.endsWith("day")) {
 //                            //    return true;
 //                            //}
@@ -605,29 +628,28 @@ public class Text_Processor2 {
 //
 //            }
 //        }
-
         nodeAttributeIndex = 0;
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            System.out.println("key " + key);
-            System.out.println("value " + value);
-                if (key.equalsIgnoreCase("#text")) {
-                    if (!value.equalsIgnoreCase("\n")) {
-                        if (value.equalsIgnoreCase("LOAD-DATE: ")){
-                            return true;
-                        }
-                        article += value + " ";
+            //System.out.println("key " + key);
+            //System.out.println("value " + value);
+            if (key.equalsIgnoreCase("#text")) {
+                if (!value.equalsIgnoreCase("\n")) {
+                    if (value.equalsIgnoreCase("LOAD-DATE: ")) {
+                        return true;
                     }
-                    //return true;
-                    //if (value.endsWith("day")) {
-                    //    return true;
-                    //}
+                    Article += value + " ";
                 }
+                //return true;
+                //if (value.endsWith("day")) {
+                //    return true;
+                //}
+            }
 //                if (value.equalsIgnoreCase("c6")) {
 //                    return true;
 //                }
@@ -635,7 +657,7 @@ public class Text_Processor2 {
         }
         return false;
     }
-    
+
     void parseChildNodes(Node node) {
         if (node.childNodeSize() > 0) {
             List<Node> childNodes;
@@ -645,7 +667,7 @@ public class Text_Processor2 {
             ite = childNodes.iterator();
             while (ite.hasNext()) {
                 childNode = ite.next();
-                isExpressNode(childNode);
+                isArticleNode(childNode);
             }
         }
     }
@@ -669,11 +691,11 @@ public class Text_Processor2 {
      * @return
      */
     public Object[] parseHTML(ArrayList<String> words, File input) {
-        inExpressArticle = false;
+        inArticle = false;
         gotDate = false;
         gotTitle = false;
         Object[] result = new Object[5];
-        TreeSet<DateHeadline> syriaDateHeadlines;
+        TreeSet<DateOutlineDetails> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
         BufferedReader br;
         br = Generic_StaticIO.getBufferedReader(input);
@@ -682,9 +704,37 @@ public class Text_Processor2 {
         try {
             doc = Jsoup.parse(input, "utf-8");
             String title = doc.title();
-            System.out.println(title);
+            //System.out.println(title);
         } catch (IOException ex) {
             Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        int n;
+        n = words.size();
+        int[] totalWordCounts = new int[n];
+        result[0] = totalWordCounts;
+        int[] totalArticleCountsForWords = new int[n];
+        result[1] = totalArticleCountsForWords;
+        int[] wordCounts = new int[n];
+        int[] articleCountsForWords = new int[n];
+        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalWordCountByDay;
+        totalWordCountByDay = new TreeMap<>();
+        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalArticleCountForWordsByDay;
+        totalArticleCountForWordsByDay = new TreeMap<>();
+        int i;
+        String word;
+        Iterator<String> ite2;
+        i = 0;
+        ite2 = words.iterator();
+        while (ite2.hasNext()) {
+            word = ite2.next();
+            totalWordCounts[i] = 0;
+            totalArticleCountsForWords[i] = 0;
+            wordCounts[i] = 0;
+            articleCountsForWords[i] = 0;
+            i++;
+            totalWordCountByDay.put(word, new TreeMap<>());
+            totalArticleCountForWordsByDay.put(word, new TreeMap<>());
         }
 
         Elements elements;
@@ -711,185 +761,131 @@ public class Text_Processor2 {
         while (ite.hasNext()) {
 
             // if inExpress then do the next thing here...
-            System.out.println("elementIndex " + elementIndex);
+            //System.out.println("elementIndex " + elementIndex);
             element = ite.next();
             if (element.hasText()) {
                 //System.out.println(element.wholeText()); // Prints out entire document
                 //System.out.println(element.text()); // Prints out entire document
-                System.out.println(element.nodeName());
+                //System.out.println(element.nodeName());
             }
             elementAttributeIndex = 0;
             elementAttributes = element.attributes();
             iteA = elementAttributes.iterator();
             while (iteA.hasNext()) {
-                System.out.println("elementAttributeIndex " + elementAttributeIndex);
+                //System.out.println("elementAttributeIndex " + elementAttributeIndex);
                 nodeAttribute = iteA.next();
                 key = nodeAttribute.getKey();
                 value = nodeAttribute.getValue();
-                System.out.println("key " + key);
-                System.out.println("value " + value);
+                //System.out.println("key " + key);
+                //System.out.println("value " + value);
                 elementAttributeIndex++;
             }
             nodeIndex = 0;
             nodes = element.childNodes();
             iteN = nodes.iterator();
             while (iteN.hasNext()) {
-                System.out.println("nodeIndex " + nodeIndex);
+                //System.out.println("nodeIndex " + nodeIndex);
                 node = iteN.next();
-                if (inExpressArticle) {
+                if (inArticle) {
                     if (gotDate) {
                         if (gotTitle) {
                             if (gotSection) {
-                                if (gotLength){
+                                if (gotLength) {
                                     gotArticle = getArticle(node);
                                 } else {
                                     gotLength = getLength(node);
-                                    article = "";
+                                    Article = "";
                                 }
                             } else {
                                 gotSection = getSection(node);
-                                length = "";
+                                Length = "";
                             }
                         } else {
-                            //System.out.println("Got date");
+                            //System.out.println("Got Date");
                             gotTitle = getTitle(node);
-                            section = "";
+                            Section = "";
                         }
                     } else {
                         //System.out.println("In Express Article");
                         gotDate = getDate(node);
-                        title = "";
+                        Title = "";
                     }
                 } else {
-                    inExpressArticle = isExpressNode(node);
-                    date = "";
+                    inArticle = isArticleNode(node);
+                    Date = "";
                 }
                 nodeIndex++;
             }
             if (gotArticle) {
-                System.out.println("We have everything to process now for this article... Process and reset");
+                //System.out.println("Got everything needed to process article... Process and reset.");
+                //System.out.println("Date " + Date);
+                LocalDate ld = parseDate(Date);
+                //System.out.println("Title " + Title);
+                //System.out.println("Section " + Section);
+                //System.out.println("Length " + Length);
+                //System.out.println("Article " + Article);
+                DayOfWeek day = ld.getDayOfWeek();
+                i = 0;
+                ite2 = words.iterator();
+                while (ite2.hasNext()) {
+                    word = ite2.next();
+                    wordCounts[i] += getWordCount(word, Article);
+                    if (wordCounts[i] > 0) {
+                        totalArticleCountsForWords[i]++;
+                        addToCount(totalArticleCountForWordsByDay.get(word), day, 1);
+                    }
+                    addToCount(totalWordCountByDay.get(word), day, wordCounts[i]);
+                    i++;
+                }
+                /**
+                 * Store DateHeadline's for those articles on Saturdays that
+                 * contain the word "syria".
+                 */
+                if (wordCounts[words.indexOf("syria")] > 0) {
+                    if (ld.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
+                        if (!isExpressArticle) {
+                            // Fire off to Guardian Open Data to try to get page number...
+                            int code = 1;
+                            
+                            String title;
+                            title = Title.replaceAll(" ","-");
+                            title = title.replaceAll(".","");
+                            title = title.replaceAll(";","");
+                            title = title.replaceAll(":","");
+                            title = title.replaceAll("?","");
+                            title = title.replaceAll("!","");
+                            
+                            String url;
+                            url = "http://content.guardianapis.com/search?show-fields=newspaperPageNumber%2CnewspaperEditionDate&q="
+                                  + title + "&api-key=" + GuardianAPIKey;
+                        
+                            
+                        }
+                        
+                        syriaDateHeadlines.add(
+                                new DateOutlineDetails(
+                                        ld,
+                                        Section, Length, Title));
+                    }
+                }
+                for (i = 0; i < n; i++) {
+                    wordCounts[i] = 0;
+                }
+                inArticle = false;
+                gotDate = false;
+                startTitle = false;
+                gotTitle = false;
+                startSection = false;
+                gotSection = false;
+                startLength = false;
+                gotLength = false;
+                gotArticle = false;
             }
             elementIndex++;
         }
-
-//        String line = null;
-//        boolean read = false;
-//        int n;
-//        n = words.size();
-//        int[] totalWordCounts = new int[n];
-//        result[0] = totalWordCounts;
-//        int[] totalArticleCountsForWords = new int[n];
-//        result[1] = totalArticleCountsForWords;
-//        int[] wordCounts = new int[n];
-//        int[] articleCountsForWords = new int[n];
-//        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalWordCountByDay;
-//        totalWordCountByDay = new TreeMap<>();
-//        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalArticleCountForWordsByDay;
-//        totalArticleCountForWordsByDay = new TreeMap<>();
-//        int i;
-//        String word;
-//        Iterator<String> ite;
-//        i = 0;
-//        ite = words.iterator();
-//        while (ite.hasNext()) {
-//            word = ite.next();
-//            totalWordCounts[i] = 0;
-//            totalArticleCountsForWords[i] = 0;
-//            wordCounts[i] = 0;
-//            articleCountsForWords[i] = 0;
-//            i++;
-//            totalWordCountByDay.put(word, new TreeMap<>());
-//            totalArticleCountForWordsByDay.put(word, new TreeMap<>());
-//        }
-//        LocalDate date0 = null;
-//        boolean gotFirstDate = false;
-//        boolean gotTitle = false;
-//        String title = null;
-//        while (!read) {
-//            try {
-//                line = br.readLine();
-//            } catch (IOException ex) {
-//                Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
-//            }
-//            if (line == null) {
-//                /**
-//                 * The file is completely read, so set read to true to exit the
-//                 * loop.
-//                 */
-//                read = true;
-//            } else {
-//                //System.out.println(line);
-//                LocalDate date;
-//                DayOfWeek day;
-//                if (!gotFirstDate) {
-//                    // Get to the first article and store the date in date0.
-//                    date0 = parseDate(line);
-//                    if (date0 != null) {
-//                        gotFirstDate = true;
-//                    }
-//                } else {
-//                    /**
-//                     * If the line contains a new date, then assume this is the
-//                     * start of a new article: compile the data from the last
-//                     * article; and, reset the variables to store information
-//                     * about the next article.
-//                     */
-//                    date = parseDate(line);
-//                    if (date == null) {
-//                        /**
-//                         * Parse the next article by first getting the title.
-//                         */
-//                        if (!gotTitle) {
-//                            title = parseTitle(line);
-//                            if (!title.isEmpty()) {
-//                                gotTitle = true;
-//                                //System.out.println(title);
-//                            }
-//                        }
-//                        i = 0;
-//                        ite = words.iterator();
-//                        while (ite.hasNext()) {
-//                            word = ite.next();
-//                            // Add to word counts
-//                            wordCounts[i] += getWordCount(word, line);
-//                            i++;
-//                        }
-//                    } else {
-//                        gotTitle = false;
-//                        day = date0.getDayOfWeek();
-//                        i = 0;
-//                        ite = words.iterator();
-//                        while (ite.hasNext()) {
-//                            word = ite.next();
-//                            // Add to word counts
-//                            totalWordCounts[i] += wordCounts[i];
-//                            if (wordCounts[i] > 0) {
-//                                totalArticleCountsForWords[i]++;
-//                                addToCount(totalArticleCountForWordsByDay.get(word), day, 1);
-//                            }
-//                            addToCount(totalWordCountByDay.get(word), day, wordCounts[i]);
-//                            i++;
-//                        }
-//                        /**
-//                         * Store DateHeadline's for those articles on Saturdays
-//                         * that contain the word "syria".
-//                         */
-//                        if (wordCounts[words.indexOf("syria")] > 0) {
-//                            if (date.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
-//                                syriaDateHeadlines.add(new DateHeadline(date, title));
-//                            }
-//                        }
-//                        for (i = 0; i < n; i++) {
-//                            wordCounts[i] = 0;
-//                        }
-//                        date0 = date;
-//                    }
-//                }
-//            }
-//        }
-//        result[2] = totalWordCountByDay;
-//        result[3] = totalArticleCountForWordsByDay;
-//        result[4] = syriaDateHeadlines;
+        result[2] = totalWordCountByDay;
+        result[3] = totalArticleCountForWordsByDay;
+        result[4] = syriaDateHeadlines;
         return result;
     }
 
@@ -941,93 +937,81 @@ public class Text_Processor2 {
     }
 
     /**
-     * For parsing a line. If it is thought to be a title as it contains some
-     * key text that it is assumed all titles have, then the title is returned
-     * otherwise an empty String is returned.
-     *
-     * @param line The line that is parsed.
-     * @return
-     */
-    String parseTitle(String line) {
-        String result = "";
-        if (line.startsWith("<br><div class=\"c5\"><p class=\"c6\"><span class=\"c7\">")) {
-            String s;
-            s = line.replace("<br><div class=\"c5\"><p class=\"c6\"><span class=\"c7\">", "");
-            s = s.replace("</span><span class=\"c10\">refugees</span><span class=\"c7\"></span><span class=\"c10\">refugees</span><span class=\"c7\">", "refugees");
-            s = s.replace("</span><span class=\"c10\">Refugees</span><span class=\"c7\"></span><span class=\"c10\">Refugees</span><span class=\"c7\">", "refugees");
-            s = s.replace("</span><span class=\"c10\">Brexit</span><span class=\"c7\">", "Brexit");
-            s = s.replace("&nbsp;", " ");
-            s = s.replace("&amp;", " ");
-            String[] split = s.split("</span>");
-            result = split[0];
-            if (result.contains("<br>")) {
-                //result = result.split("<br>")[0].trim();
-                result = result.replace("<br>", " ");
-            }
-        }
-        return result;
-    }
-
-    /**
-     * For parsing a line. If it is thought to be a date as it contains some key
-     * text that it is assumed all dates have, then the date is returned
+     * For parsing a line. If it is thought to be a Date as it contains some key
+     * text that it is assumed all dates have, then the Date is returned
      * otherwise an empty String is returned.
      *
      * @param line
      * @return
      */
-    LocalDate parseDate(String line) {
+    LocalDate parseDate(String s) {
         LocalDate result = null;
-        if (line.startsWith("<br><div class=\"c3\"><p class=\"c1\"><span class=\"c4\">")) {
-            String month;
-            String dayOfMonth;
-            String year;
-            String dayOfWeek;
-            String s;
-            s = line.replaceAll("<br><div class=\"c3\"><p class=\"c1\"><span class=\"c4\">", "");
-            String[] split;
-            split = s.split("</span><span class=\"c2\"> ");
-            month = split[0];
-            String[] split2;
-            split2 = split[1].replace("</span><span", "").trim().split(",");
-            dayOfMonth = split2[0];
-            String[] split3;
-            split3 = split2[1].trim().split(" ");
-            year = split3[0];
-            dayOfWeek = split3[1];
-//            String stringDate = "";
-//            stringDate += "year " + year;
-//            stringDate += " month " + month;
-//            stringDate += " dayOfMonth " + dayOfMonth;
-//            stringDate += " dayOfWeek " + dayOfWeek;
-//            System.out.println(stringDate);
-            Month m = Month.valueOf(Generic_StaticString.getUpperCase(month));
-            result = LocalDate.of(Integer.valueOf(year), m, Integer.valueOf(dayOfMonth));
-            //System.out.println(LD.toString());
+        String month;
+        String dayOfMonth;
+        String year;
+        String dayOfWeek;
+        String[] split;
+        split = s.split(", ");
+        String[] split2;
+        split2 = split[0].split(" ");
+        month = split2[0];
+        dayOfMonth = split2[1];
+        split2 = split[1].split(" ");
+        year = split2[0];
+        dayOfWeek = split2[1];
+//        String stringDate = "";
+//        stringDate += "year " + year;
+//        stringDate += " month " + month;
+//        stringDate += " dayOfMonth " + dayOfMonth;
+//        stringDate += " dayOfWeek " + dayOfWeek;
+//        System.out.println(stringDate);
+        Month m = Month.valueOf(Generic_StaticString.getUpperCase(month));
+        result = LocalDate.of(Integer.valueOf(year), m, Integer.valueOf(dayOfMonth));
+        return result;
+    }
+    
+    String getGuardianAPIKey(){
+        String result = "";
+        File f;
+        File dir;
+        dir = new File(Files.getDataDir(), "private");
+        f = new File (dir, "GuardianAPIKey.txt");
+        BufferedReader br;
+        br = Generic_StaticIO.getBufferedReader(f);
+        try {
+            result = br.readLine();
+            br.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
         }
         return result;
     }
 
     /**
      * A simple inner class for wrapping a LocalDate and a String such that
-     * different instances can be ordered which the are first by date and then
+     * different instances can be ordered which the are first by Date and then
      * by the String.
      */
-    public class DateHeadline implements Comparable<DateHeadline> {
+    public class DateOutlineDetails implements Comparable<DateOutlineDetails> {
 
         LocalDate LD;
+        String Section;
+        String Length;
         String Headline;
 
-        public DateHeadline() {
+        public DateOutlineDetails() {
         }
 
-        public DateHeadline(LocalDate ld, String headline) {
+        public DateOutlineDetails(
+                LocalDate ld, String section, String length, String headline) {
             LD = ld;
+            Section = section;
+            Length = length;
             Headline = headline;
         }
 
         @Override
-        public int compareTo(DateHeadline t) {
+        public int compareTo(DateOutlineDetails t) {
             int dateComparison = LD.compareTo(t.LD);
             if (dateComparison == 0) {
                 if (Headline == null) {
@@ -1040,7 +1024,9 @@ public class Text_Processor2 {
                     if (t.Headline == null) {
                         return -1;
                     } else {
-                        return Headline.compareTo(t.Headline);
+                        int outlineDetailsComparison;
+                        outlineDetailsComparison = (Section + Length + Headline).compareTo(t.Headline + t.Length + t.Headline);
+                        return outlineDetailsComparison;
                     }
                 }
             } else {
