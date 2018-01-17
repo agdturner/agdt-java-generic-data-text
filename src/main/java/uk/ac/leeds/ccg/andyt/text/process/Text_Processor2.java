@@ -65,7 +65,7 @@ public class Text_Processor2 {
         new Text_Processor2().run();
     }
 
-                    String GuardianAPIKey;
+    String GuardianAPIKey;
 
     /**
      * This is the main processing method.
@@ -76,7 +76,6 @@ public class Text_Processor2 {
         writeHeadlines = true;
         //writeHeadlines = false;
 
-        
         /**
          * Initialise words
          */
@@ -86,6 +85,10 @@ public class Text_Processor2 {
         words.add("brexit");
         words.add("migrant crisis");
         words.add("steven woolfe");
+        words.add("refugee crisis");
+        words.add("crisis");
+        words.add("immigration crisis");
+        words.add("illegal immigrant");
 
         /**
          * Initialise directories
@@ -94,8 +97,8 @@ public class Text_Processor2 {
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
         String dirname;
-        //dirname = "LexisNexis-20171127T155442Z-001";
-        dirname = "LexisNexis-20171122T195223Z-001";
+        dirname = "LexisNexis-20171127T155442Z-001";
+//        dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outputDir;
         inputDir = new File(
@@ -846,22 +849,21 @@ public class Text_Processor2 {
                         if (!isExpressArticle) {
                             // Fire off to Guardian Open Data to try to get page number...
                             int code = 1;
-                            
+
                             String title;
-                            title = Title.replaceAll(" ","-");
-                            title = title.replaceAll(".","");
-                            title = title.replaceAll(";","");
-                            title = title.replaceAll(":","");
-                            title = title.replaceAll("?","");
-                            title = title.replaceAll("!","");
-                            
+                            title = Title.replaceAll(" ", "-");
+                            title = title.replaceAll("\\.", "");
+                            title = title.replaceAll(";", "");
+                            title = title.replaceAll(":", "");
+                            title = title.replaceAll("\\?", "");
+                            title = title.replaceAll("!", "");
+
                             String url;
                             url = "http://content.guardianapis.com/search?show-fields=newspaperPageNumber%2CnewspaperEditionDate&q="
-                                  + title + "&api-key=" + GuardianAPIKey;
-                        
-                            
+                                    + title + "&api-key=" + GuardianAPIKey;
+
                         }
-                        
+
                         syriaDateHeadlines.add(
                                 new DateOutlineDetails(
                                         ld,
@@ -969,13 +971,13 @@ public class Text_Processor2 {
         result = LocalDate.of(Integer.valueOf(year), m, Integer.valueOf(dayOfMonth));
         return result;
     }
-    
-    String getGuardianAPIKey(){
+
+    String getGuardianAPIKey() {
         String result = "";
         File f;
         File dir;
         dir = new File(Files.getDataDir(), "private");
-        f = new File (dir, "GuardianAPIKey.txt");
+        f = new File(dir, "GuardianAPIKey.txt");
         BufferedReader br;
         br = Generic_StaticIO.getBufferedReader(f);
         try {
