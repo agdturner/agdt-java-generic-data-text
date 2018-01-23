@@ -49,7 +49,7 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
  * comprise the text of sets of articles downloaded from
  * http://www.nexislexis.com from the Express and Guardian newspapers from the
  * 1st of April 2015 to the 10th of February 2016. The search criteria for the
- * articles included the words "refugee" or "brexit" or both.
+ * articles included the terms "refugee" or "brexit" or both.
  */
 public class Text_Processor2 {
 
@@ -73,22 +73,100 @@ public class Text_Processor2 {
     public void run() {
 
         boolean writeHeadlines;
-        writeHeadlines = true;
-        //writeHeadlines = false;
+        //writeHeadlines = true;
+        writeHeadlines = false;
 
         /**
-         * Initialise words
+         * Initialise terms
          */
-        ArrayList words = new ArrayList();
-        words.add("refugee");
-        words.add("syria");
-        words.add("brexit");
-        words.add("migrant crisis");
-        words.add("steven woolfe");
-        words.add("refugee crisis");
-        words.add("crisis");
-        words.add("immigration crisis");
-        words.add("illegal immigrant");
+        ArrayList terms = new ArrayList();
+
+        // Migrant/refugee
+        terms.add(" asylum seeker");
+        terms.add(" economic migrant ");
+        terms.add(" illegal immigrant ");
+        terms.add(" illegal migrant ");
+        terms.add(" immigration crisis ");
+        terms.add(" migrant crisis ");
+        terms.add(" migrant flood OR flood of migrants ");
+        terms.add(" refugee crisis ");
+        terms.add(" refugee camp ");
+        terms.add(" eu turkey deal ");
+
+        // People
+        terms.add(" steven woolfe ");
+        terms.add(" nigel farage ");
+
+        // Political
+        terms.add(" edl ");
+        terms.add(" far right ");
+        terms.add(" isis ");
+        terms.add(" islamic state ");
+        terms.add(" nazi ");
+        terms.add(" right wing ");
+        terms.add(" ukip ");
+
+        // Places
+        terms.add(" africa ");
+        terms.add(" asia ");
+        terms.add(" england ");
+        terms.add(" eu ");
+        terms.add(" europe ");
+        terms.add(" france ");
+        terms.add(" germany ");
+        terms.add(" greek ");
+        terms.add(" greece ");
+        terms.add(" iraq ");
+        terms.add(" israel ");
+        terms.add(" italy ");
+        terms.add(" jordan ");
+        terms.add(" lebanon ");
+        terms.add(" lesbos ");
+        terms.add(" mediterranean ");
+        terms.add(" spain ");
+        terms.add(" syria ");
+        terms.add(" turkey ");
+        terms.add(" uk ");
+        terms.add(" west bank ");
+
+        // Key terms
+        terms.add(" asylum ");
+        terms.add(" across the border ");
+        terms.add(" border ");
+        terms.add(" boat ");
+        terms.add(" brexit ");
+        terms.add(" child OR children ");
+        terms.add(" camp ");
+        terms.add(" chaos ");
+        terms.add(" crime ");
+        terms.add(" crisis ");
+        terms.add(" desperate ");
+        terms.add(" deal ");
+        terms.add(" death ");
+        terms.add(" died ");
+        terms.add(" drown ");
+        terms.add(" dying ");
+        terms.add(" disease ");
+        terms.add(" extremism ");
+        terms.add(" economic ");
+        terms.add(" famine ");
+        terms.add(" flood ");
+        terms.add(" flee OR fleeing ");
+        terms.add(" hate crime ");
+        terms.add(" illegal ");
+        terms.add(" immigration ");
+        terms.add(" islam ");
+        terms.add(" lorry OR lorries ");
+        terms.add(" migrant ");
+        terms.add(" movement ");
+        terms.add(" muslim ");
+        terms.add(" plight ");
+        terms.add(" refugee ");
+        terms.add(" terror ");
+        terms.add(" terrorist ");
+        terms.add(" terrorism ");
+        terms.add(" work ");
+        terms.add(" war ");
 
         /**
          * Initialise directories
@@ -100,16 +178,16 @@ public class Text_Processor2 {
         dirname = "LexisNexis-20171127T155442Z-001";
 //        dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
-        File outputDir;
+        File outDir;
         inputDir = new File(
                 Files.getLexisNexisInputDataDir(),
                 dirname + "/LexisNexis");
         System.out.println(inputDir);
-        outputDir = new File(
+        outDir = new File(
                 Files.getLexisNexisOutputDataDir(),
                 dirname + "/LexisNexis");
-        if (!outputDir.exists()) {
-            outputDir.mkdirs();
+        if (!outDir.exists()) {
+            outDir.mkdirs();
         }
 
         // Get GuardianAPIKey
@@ -120,12 +198,12 @@ public class Text_Processor2 {
          */
         ArrayList<DayOfWeek> mondayToSaturday;
         mondayToSaturday = getMondayToSaturday();
-        int[] grandTotalWordCounts;
-        HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalWordCountOnDays;
-        int[] grandTotalArticleCountsForWords;
-        HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalArticleCountsForWordsOnDays;
+        int[] grandTotalTermCounts;
+        HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalTermCountOnDays;
+        int[] grandTotalArticleCountsForTerms;
+        HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalArticleCountsForTermsOnDays;
         int i;
-        String word;
+        String term;
         Iterator<String> ite;
         /**
          * Process the data going through each input file. Currently the output
@@ -144,11 +222,10 @@ public class Text_Processor2 {
          */
         for (File input0 : inputs0) {
             name = input0.getName();
-            outFile = Generic_StaticIO.createNewFile(outputDir, name + "Counts.csv");
+            outFile = new File(outDir, name + "Counts.csv");
             pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
             if (writeHeadlines) {
-                outFile = Generic_StaticIO.createNewFile(
-                        outputDir,
+                outFile = new File(outDir,
                         name + "HeadlinesForArticlesContaining_Syria.csv");
                 pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
                 pwHeadlines.println("Date, Section, Length, Title");
@@ -169,19 +246,19 @@ public class Text_Processor2 {
             /**
              * Initialise results.
              */
-            grandTotalWordCounts = new int[words.size()];
-            grandTotalArticleCountsForWords = new int[words.size()];
-            grandTotalWordCountOnDays = new HashMap<>();
-            grandTotalArticleCountsForWordsOnDays = new HashMap<>();
+            grandTotalTermCounts = new int[terms.size()];
+            grandTotalArticleCountsForTerms = new int[terms.size()];
+            grandTotalTermCountOnDays = new HashMap<>();
+            grandTotalArticleCountsForTermsOnDays = new HashMap<>();
             i = 0;
-            ite = words.iterator();
+            ite = terms.iterator();
             while (ite.hasNext()) {
-                word = ite.next();
-                grandTotalWordCounts[i] = 0;
-                grandTotalArticleCountsForWords[i] = 0;
+                term = ite.next();
+                grandTotalTermCounts[i] = 0;
+                grandTotalArticleCountsForTerms[i] = 0;
                 i++;
-                grandTotalWordCountOnDays.put(word, new TreeMap<>());
-                grandTotalArticleCountsForWordsOnDays.put(word, new TreeMap<>());
+                grandTotalTermCountOnDays.put(term, new TreeMap<>());
+                grandTotalArticleCountsForTermsOnDays.put(term, new TreeMap<>());
             }
             /**
              * Iterate through all the subdirectories in inputDir. It is known
@@ -189,8 +266,8 @@ public class Text_Processor2 {
              * associated directories. For the purposes of this processing, only
              * the HTML files are processed.
              */
-            int[] totalWordCounts;
-            int[] totalWordCountsInArticles;
+            int[] totalTermCounts;
+            int[] totalTermCountsInArticles;
             Object[] results;
             for (File input1 : inputs1) {
                 //System.out.println(input1);
@@ -203,27 +280,27 @@ public class Text_Processor2 {
                      * Parse the HTML file and obtain part of the result.
                      */
                     //if (input1.getParentFile().getName().startsWith("LexisNexis - The G")) {
-                    results = parseHTML(words, input1);
+                    results = parseHTML(terms, input1);
                     /**
                      * Combine the results from parsing this file to the overall
                      * results.
                      */
                     // Process counts.
-                    totalWordCounts = (int[]) results[0];
-                    totalWordCountsInArticles = (int[]) results[1];
+                    totalTermCounts = (int[]) results[0];
+                    totalTermCountsInArticles = (int[]) results[1];
                     i = 0;
-                    ite = words.iterator();
+                    ite = terms.iterator();
                     while (ite.hasNext()) {
-                        word = ite.next();
-                        grandTotalWordCounts[i] += totalWordCounts[i];
-                        grandTotalArticleCountsForWords[i] += totalWordCountsInArticles[i];
+                        term = ite.next();
+                        grandTotalTermCounts[i] += totalTermCounts[i];
+                        grandTotalArticleCountsForTerms[i] += totalTermCountsInArticles[i];
                         i++;
                         addToCount(
-                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[2]).get(word),
-                                grandTotalWordCountOnDays.get(word));
+                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[2]).get(term),
+                                grandTotalTermCountOnDays.get(term));
                         addToCount(
-                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[3]).get(word),
-                                grandTotalArticleCountsForWordsOnDays.get(word));
+                                ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[3]).get(term),
+                                grandTotalArticleCountsForTermsOnDays.get(term));
 
                     }
                     if (writeHeadlines) {
@@ -250,25 +327,25 @@ public class Text_Processor2 {
             /**
              * Write header
              */
-            System.out.print("term, total word count, total article count");
-            pwCounts.print("term, total word count, total article count");
-//                System.out.println(word + " word count on " + day + " " + i);
-//                pw.println(word + " word count on " + day + " " + i);
-            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay;
-            TreeMap<DayOfWeek, Integer> grandTotalArticleCountsForWordsOnDay;
+            System.out.print("Term, Total Term Count, Total Article Count");
+            pwCounts.print("Term, Total Term Count, Total Article Count");
+//                System.out.println(term + " term count on " + day + " " + i);
+//                pw.println(term + " term count on " + day + " " + i);
+            TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDay;
+            TreeMap<DayOfWeek, Integer> grandTotalArticleCountsForTermsOnDay;
             Iterator<DayOfWeek> ite2;
             DayOfWeek day;
             ite2 = mondayToSaturday.iterator();
             while (ite2.hasNext()) {
                 day = ite2.next();
-                System.out.print(", word count on " + day);
-                pwCounts.print(", word count on " + day);
+                System.out.print(", Term Count On " + day);
+                pwCounts.print(", Term Count On " + day);
             }
             ite2 = mondayToSaturday.iterator();
             while (ite2.hasNext()) {
                 day = ite2.next();
-                System.out.print(", article count on " + day);
-                pwCounts.print(", article count on " + day);
+                System.out.print(", Article Count On " + day);
+                pwCounts.print(", Article Count On " + day);
             }
             System.out.println();
             pwCounts.println();
@@ -276,24 +353,24 @@ public class Text_Processor2 {
              * Write lines
              */
             i = 0;
-            ite = words.iterator();
+            ite = terms.iterator();
             while (ite.hasNext()) {
-                word = ite.next();
-                grandTotalWordCountOnDay = grandTotalWordCountOnDays.get(word);
-                grandTotalArticleCountsForWordsOnDay = grandTotalArticleCountsForWordsOnDays.get(word);
-//                System.out.println(word + " word count " + grandTotalWordCounts[i]);
-//                pwCounts.println(word + " word count " + grandTotalWordCounts[i]);
-//                System.out.println(word + " Article count " + grandTotalArticleCountsForWords[i]);
-//                pwCounts.println(word + " Article count " + grandTotalArticleCountsForWords[i]);
-                System.out.print(word);
-                pwCounts.print(word);
-                System.out.print(", " + grandTotalWordCounts[i]);
-                pwCounts.print(", " + grandTotalWordCounts[i]);
-                System.out.print(", " + grandTotalArticleCountsForWords[i]);
-                pwCounts.print(", " + grandTotalArticleCountsForWords[i]);
+                term = ite.next();
+                grandTotalTermCountOnDay = grandTotalTermCountOnDays.get(term);
+                grandTotalArticleCountsForTermsOnDay = grandTotalArticleCountsForTermsOnDays.get(term);
+//                System.out.println(term + " term count " + grandTotalTermCounts[i]);
+//                pwCounts.println(term + " term count " + grandTotalTermCounts[i]);
+//                System.out.println(term + " Article count " + grandTotalArticleCountsForTerms[i]);
+//                pwCounts.println(term + " Article count " + grandTotalArticleCountsForTerms[i]);
+                System.out.print(term);
+                pwCounts.print(term);
+                System.out.print(", " + grandTotalTermCounts[i]);
+                pwCounts.print(", " + grandTotalTermCounts[i]);
+                System.out.print(", " + grandTotalArticleCountsForTerms[i]);
+                pwCounts.print(", " + grandTotalArticleCountsForTerms[i]);
                 i++;
-                printWordCountOnDay(pwCounts, mondayToSaturday, word, grandTotalWordCountOnDays.get(word));
-                printWordCountOnDay(pwCounts, mondayToSaturday, word, grandTotalArticleCountsForWordsOnDays.get(word));
+                printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalTermCountOnDays.get(term));
+                printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalArticleCountsForTermsOnDays.get(term));
                 System.out.println();
                 pwCounts.println();
             }
@@ -305,18 +382,18 @@ public class Text_Processor2 {
         }
     }
 
-    void printWordCountOnDay(
+    void printTermCountOnDay(
             PrintWriter pw,
             ArrayList<DayOfWeek> mondayToSaturday,
-            String word,
-            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDay) {
+            String term,
+            TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDay) {
         Iterator<DayOfWeek> ite;
         DayOfWeek day;
         Integer i;
         ite = mondayToSaturday.iterator();
         while (ite.hasNext()) {
             day = ite.next();
-            i = grandTotalWordCountOnDay.get(day);
+            i = grandTotalTermCountOnDay.get(day);
             if (i == null) {
                 System.out.print(", 0");
                 pw.print(", 0");
@@ -463,9 +540,24 @@ public class Text_Processor2 {
                 }
             } else {
                 if (key.equalsIgnoreCase("#text")) {
+                    /**
+                     * Replace all non alphabetical non numeric characters with
+                     * a space. This is to help overcome issues with searching
+                     * for terms that might be found in other words. It is not a
+                     * perfect solution as some terms made up of several words
+                     * might fall across two sentences and not really be terms
+                     * at all, but just a set of words in the same order (e.g.
+                     * instead of counting "migrant crisis this might count "...
+                     * migrant. Crisis ...").
+                     */
+                    value = value.replaceAll("[^A-Za-z0-9]", " ");
                     Title += value;
                 }
                 if (value.equalsIgnoreCase("c6")) {
+                    // Remove double spaces
+                    while (Title.contains("  ")) {
+                        Title = Title.replaceAll("  ", " ");
+                    }
                     return true;
                 }
             }
@@ -644,8 +736,23 @@ public class Text_Processor2 {
             if (key.equalsIgnoreCase("#text")) {
                 if (!value.equalsIgnoreCase("\n")) {
                     if (value.equalsIgnoreCase("LOAD-DATE: ")) {
+                        // Remove double spaces.
+                        while (Article.contains("  ")) {
+                            Article = Article.replaceAll("  ", " ");
+                        }
                         return true;
                     }
+                    /**
+                     * Replace all non alphabetical non numeric characters with
+                     * a space. This is to help overcome issues with searching
+                     * for terms that might be found in other words. It is not a
+                     * perfect solution as some terms made up of several words
+                     * might fall across two sentences and not really be terms
+                     * at all, but just a set of words in the same order (e.g.
+                     * instead of counting "migrant crisis this might count "...
+                     * migrant. Crisis ...").
+                     */
+                    value = value.replaceAll("[^A-Za-z0-9]", " ");
                     Article += value + " ";
                 }
                 //return true;
@@ -680,64 +787,64 @@ public class Text_Processor2 {
      * an Object[] result of size 5: result[0] is an int[] of size 3 containing
      * counts of the numbers of mentions of the terms "refugee", "syria" and
      * "brexit" respectively. result[1] is TreeMap with keys that are the
-     * DayOfWeek and values that are counts of the number of times the word
+     * DayOfWeek and values that are counts of the number of times the term
      * "refugee" appears on those days. result[2] is TreeMap with keys that are
-     * the DayOfWeek and values that are counts of the number of times the word
+     * the DayOfWeek and values that are counts of the number of times the term
      * "syria" appears on those days. result[3] is TreeMap with keys that are
-     * the DayOfWeek and values that are counts of the number of times the word
+     * the DayOfWeek and values that are counts of the number of times the term
      * "brexit" appears on those days. result[4] is a TreeSet of DateHeadlines
      * which provides the dated and headlines of articles that have mention of
      * "syria" in them.
      *
-     * @param words
+     * @param terms
      * @param input The input file to be parsed.
      * @return
      */
-    public Object[] parseHTML(ArrayList<String> words, File input) {
+    public Object[] parseHTML(ArrayList<String> terms, File input) {
         inArticle = false;
         gotDate = false;
         gotTitle = false;
         Object[] result = new Object[5];
         TreeSet<DateOutlineDetails> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
-        BufferedReader br;
-        br = Generic_StaticIO.getBufferedReader(input);
+//        BufferedReader br;
+//        br = Generic_StaticIO.getBufferedReader(input);
 
         Document doc = null;
         try {
             doc = Jsoup.parse(input, "utf-8");
-            String title = doc.title();
+            //String title = doc.title();
             //System.out.println(title);
         } catch (IOException ex) {
             Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         int n;
-        n = words.size();
-        int[] totalWordCounts = new int[n];
-        result[0] = totalWordCounts;
-        int[] totalArticleCountsForWords = new int[n];
-        result[1] = totalArticleCountsForWords;
-        int[] wordCounts = new int[n];
-        int[] articleCountsForWords = new int[n];
-        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalWordCountByDay;
-        totalWordCountByDay = new TreeMap<>();
-        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalArticleCountForWordsByDay;
-        totalArticleCountForWordsByDay = new TreeMap<>();
+        n = terms.size();
+        int[] totalTermCounts = new int[n];
+        result[0] = totalTermCounts;
+        int[] totalArticleCountsForTerms = new int[n];
+        result[1] = totalArticleCountsForTerms;
+        int[] termCounts = new int[n];
+        int[] articleCountsForTerms = new int[n];
+        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalTermCountByDay;
+        totalTermCountByDay = new TreeMap<>();
+        TreeMap<String, TreeMap<DayOfWeek, Integer>> totalArticleCountForTermsByDay;
+        totalArticleCountForTermsByDay = new TreeMap<>();
         int i;
-        String word;
+        String term;
         Iterator<String> ite2;
         i = 0;
-        ite2 = words.iterator();
+        ite2 = terms.iterator();
         while (ite2.hasNext()) {
-            word = ite2.next();
-            totalWordCounts[i] = 0;
-            totalArticleCountsForWords[i] = 0;
-            wordCounts[i] = 0;
-            articleCountsForWords[i] = 0;
+            term = ite2.next();
+            totalTermCounts[i] = 0;
+            totalArticleCountsForTerms[i] = 0;
+            termCounts[i] = 0;
+            articleCountsForTerms[i] = 0;
             i++;
-            totalWordCountByDay.put(word, new TreeMap<>());
-            totalArticleCountForWordsByDay.put(word, new TreeMap<>());
+            totalTermCountByDay.put(term, new TreeMap<>());
+            totalArticleCountForTermsByDay.put(term, new TreeMap<>());
         }
 
         Elements elements;
@@ -829,22 +936,23 @@ public class Text_Processor2 {
                 //System.out.println("Article " + Article);
                 DayOfWeek day = ld.getDayOfWeek();
                 i = 0;
-                ite2 = words.iterator();
+                ite2 = terms.iterator();
                 while (ite2.hasNext()) {
-                    word = ite2.next();
-                    wordCounts[i] += getWordCount(word, Article);
-                    if (wordCounts[i] > 0) {
-                        totalArticleCountsForWords[i]++;
-                        addToCount(totalArticleCountForWordsByDay.get(word), day, 1);
+                    term = ite2.next();
+                    termCounts[i] += getTermCount(term, Article);
+                    if (termCounts[i] > 0) {
+                        totalTermCounts[i] += termCounts[i];
+                        totalArticleCountsForTerms[i]++;
+                        addToCount(totalArticleCountForTermsByDay.get(term), day, 1);
                     }
-                    addToCount(totalWordCountByDay.get(word), day, wordCounts[i]);
+                    addToCount(totalTermCountByDay.get(term), day, termCounts[i]);
                     i++;
                 }
                 /**
                  * Store DateHeadline's for those articles on Saturdays that
-                 * contain the word "syria".
+                 * contain the term " syria ".
                  */
-                if (wordCounts[words.indexOf("syria")] > 0) {
+                if (termCounts[terms.indexOf(" syria ")] > 0) {
                     if (ld.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
                         if (!isExpressArticle) {
                             // Fire off to Guardian Open Data to try to get page number...
@@ -864,14 +972,12 @@ public class Text_Processor2 {
 
                         }
 
-                        syriaDateHeadlines.add(
-                                new DateOutlineDetails(
-                                        ld,
-                                        Section, Length, Title));
+                        syriaDateHeadlines.add(new DateOutlineDetails(ld,
+                                Section, Length, Title));
                     }
                 }
                 for (i = 0; i < n; i++) {
-                    wordCounts[i] = 0;
+                    termCounts[i] = 0;
                 }
                 inArticle = false;
                 gotDate = false;
@@ -885,56 +991,64 @@ public class Text_Processor2 {
             }
             elementIndex++;
         }
-        result[2] = totalWordCountByDay;
-        result[3] = totalArticleCountForWordsByDay;
+        result[2] = totalTermCountByDay;
+        result[3] = totalArticleCountForTermsByDay;
         result[4] = syriaDateHeadlines;
         return result;
     }
 
     public void addToCount(
-            TreeMap<DayOfWeek, Integer> totalWordCountOnDay,
-            TreeMap<DayOfWeek, Integer> grandTotalWordCountOnDays) {
+            TreeMap<DayOfWeek, Integer> totalTermCountOnDay,
+            TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDays) {
         DayOfWeek day;
         int i;
-        Iterator<DayOfWeek> ite = totalWordCountOnDay.keySet().iterator();
+        Iterator<DayOfWeek> ite = totalTermCountOnDay.keySet().iterator();
         while (ite.hasNext()) {
             day = ite.next();
-            if (grandTotalWordCountOnDays.containsKey(day)) {
-                i = grandTotalWordCountOnDays.get(day);
-                i += totalWordCountOnDay.get(day);
+            if (grandTotalTermCountOnDays.containsKey(day)) {
+                i = grandTotalTermCountOnDays.get(day);
+                i += totalTermCountOnDay.get(day);
             } else {
-                i = totalWordCountOnDay.get(day);
+                i = totalTermCountOnDay.get(day);
             }
-            grandTotalWordCountOnDays.put(day, i);
+            grandTotalTermCountOnDays.put(day, i);
         }
     }
 
     public void addToCount(
-            TreeMap<DayOfWeek, Integer> wordCount,
+            TreeMap<DayOfWeek, Integer> termCount,
             DayOfWeek day, int count) {
         int i;
-        if (wordCount.containsKey(day)) {
-            i = wordCount.get(day);
+        if (termCount.containsKey(day)) {
+            i = termCount.get(day);
             i += count;
         } else {
             i = count;
         }
-        wordCount.put(day, i);
+        termCount.put(day, i);
     }
 
     /**
-     * A generalised method that counts the number of times word appears in
-     * line. This is done for the case that word is provided in, for word in all
-     * upper case and for word with a capitalised/uppercase first letter.
+     * A generalised method that counts the number of times term appears in
+     * line. This is done for the case that term is provided in, for term in all
+     * upper case and for term with a capitalised/uppercase first letter.
      *
-     * @param word
+     * @param term
      * @param line
      * @return
      */
-    int getWordCount(String word, String line) {
+    int getTermCount(String term, String line) {
         String lowerCaseLine = Generic_StaticString.getLowerCase(line);
         int result = 0;
-        result += lowerCaseLine.split(word).length - 1;
+        if (term.contains("OR")) {
+            String[] split;
+            split = term.split("OR");
+            for (String split1 : split) {
+                result += lowerCaseLine.split(split1).length - 1;
+            }
+        } else {
+            result += lowerCaseLine.split(term).length - 1;
+        }
         return result;
     }
 
@@ -947,11 +1061,11 @@ public class Text_Processor2 {
      * @return
      */
     LocalDate parseDate(String s) {
-        LocalDate result = null;
+        LocalDate result;
         String month;
         String dayOfMonth;
         String year;
-        String dayOfWeek;
+        //String dayOfWeek;
         String[] split;
         split = s.split(", ");
         String[] split2;
@@ -960,7 +1074,7 @@ public class Text_Processor2 {
         dayOfMonth = split2[1];
         split2 = split[1].split(" ");
         year = split2[0];
-        dayOfWeek = split2[1];
+        //dayOfWeek = split2[1];
 //        String stringDate = "";
 //        stringDate += "year " + year;
 //        stringDate += " month " + month;

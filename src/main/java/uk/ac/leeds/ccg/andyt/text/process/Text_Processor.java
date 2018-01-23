@@ -86,16 +86,16 @@ public class Text_Processor {
         //dirname = "LexisNexis-20171127T155442Z-001";
         dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
-        File outputDir;
+        File outDir;
         inputDir = new File(
                 Files.getLexisNexisInputDataDir(),
                 dirname + "/LexisNexis");
         System.out.println(inputDir);
-        outputDir = new File(
+        outDir = new File(
                 Files.getLexisNexisOutputDataDir(),
                 dirname + "/LexisNexis");
-        if (outputDir.exists()) {
-            outputDir.mkdirs();
+        if (outDir.exists()) {
+            outDir.mkdirs();
         }
 
         /**
@@ -127,11 +127,10 @@ public class Text_Processor {
          */
         for (File input0 : inputs0) {
             name = input0.getName();
-            outFile = Generic_StaticIO.createNewFile(outputDir, name + "Counts.csv");
+            outFile = new File(outDir, name + "Counts.csv");
             pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
             if (writeHeadlines) {
-                outFile = Generic_StaticIO.createNewFile(
-                        outputDir,
+                outFile = new File(outDir,
                         name + "HeadlinesForArticlesContaining_Syria.txt");
                 pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
             }

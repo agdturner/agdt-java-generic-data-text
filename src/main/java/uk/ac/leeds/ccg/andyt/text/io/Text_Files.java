@@ -18,20 +18,24 @@ package uk.ac.leeds.ccg.andyt.text.io;
 
 import java.io.File;
 import uk.ac.leeds.ccg.andyt.generic.io.Generic_Files;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
 
 /**
  * This class if for managing files for the library.
  */
 public class Text_Files extends Generic_Files {
 
+    private final Text_Strings Strings;
     private File LexisNexisInputDataDir;
     private File LexisNexisOutputDataDir;
 
     protected Text_Files() {
+        Strings = new Text_Strings();
     }
 
     public Text_Files(String dataDirName) {
         super(dataDirName);
+        Strings = new Text_Strings();
     }
 
     /**
@@ -40,7 +44,7 @@ public class Text_Files extends Generic_Files {
     public File getLexisNexisInputDataDir() {
         if (LexisNexisInputDataDir == null) {
             LexisNexisInputDataDir = new File(
-                    getInputDataDir(), "LexisNexis");
+                    getInputDataDir(Strings), "LexisNexis");
         }
         return LexisNexisInputDataDir;
     }
@@ -51,7 +55,7 @@ public class Text_Files extends Generic_Files {
     public File getLexisNexisOutputDataDir() {
         if (LexisNexisOutputDataDir == null) {
             LexisNexisOutputDataDir = new File(
-                    getOutputDataDir(), "LexisNexis");
+                    getOutputDataDir(Strings), "LexisNexis");
         }
         return LexisNexisOutputDataDir;
     }
