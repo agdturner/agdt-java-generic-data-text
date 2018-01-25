@@ -72,6 +72,10 @@ public class Text_Processor2 {
      */
     public void run() {
 
+        /**
+         * Set writeHeadlines to be true to write out the titles of articles for
+         * those articles containing the term " syria ".
+         */
         boolean writeHeadlines;
         //writeHeadlines = true;
         writeHeadlines = false;
