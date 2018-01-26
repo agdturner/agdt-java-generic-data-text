@@ -2,14 +2,14 @@
  * Part of a library developed for text data processing tasks.
  * Copyright 2017 Andy Turner, University of Leeds.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
+ * Licensed under the Apache License, Version 2.0 (the"License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
+ * distributed under the License is distributed on an"AS IS"BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
@@ -49,7 +49,7 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
  * comprise the text of sets of articles downloaded from
  * http://www.nexislexis.com from the Express and Guardian newspapers from the
  * 1st of April 2015 to the 10th of February 2016. The search criteria for the
- * articles included the terms "refugee" or "brexit" or both.
+ * articles included the terms"refugee"or"brexit"or both.
  */
 public class Text_Processor2 {
 
@@ -67,6 +67,9 @@ public class Text_Processor2 {
 
     String GuardianAPIKey;
 
+    int expressArticleCount;
+    int guardianArticleCount;
+
     /**
      * This is the main processing method.
      */
@@ -74,402 +77,19 @@ public class Text_Processor2 {
 
         /**
          * Set writeHeadlines to be true to write out the titles of articles for
-         * those articles containing the term " syria ".
+         * those articles containing the term "syria".
          */
         boolean writeHeadlines;
         //writeHeadlines = true;
         writeHeadlines = false;
 
         /**
-         * Initialise terms
+         * Get the terms
          */
-        TreeMap<Integer, ArrayList<String>> allterms = new TreeMap<>();
-
-        HashMap<Integer, String> termTypes = new HashMap<>();
-        int i = 0;
-        int index = -1;
-        // Key Migrant/Refugee Terms
-        termTypes.put(i, "Key Migrant/Refugee Terms");
-        ArrayList mrterms = new ArrayList();
-        allterms.put(i, mrterms);
-        i++;
-        mrterms.add(" asylum seeker");
-        mrterms.add(" economic migrant ");
-        mrterms.add(" humanitarian crisis ");
-        mrterms.add(" illegal immigrant ");
-        mrterms.add(" illegal migrant ");
-        mrterms.add(" immigration crisis ");
-        mrterms.add(" migrant crisis ");
-        mrterms.add(" migrant flood OR flood of migrants ");
-        mrterms.add(" refugee crisis ");
-        mrterms.add(" refugee camp ");
-        index += mrterms.size();
-        // People Terms
-        // Types of People Terms
-        termTypes.put(i, "Types of People");
-        ArrayList ptterms = new ArrayList();
-        allterms.put(i, ptterms);
-        i++;
-        ptterms.add(" alien ");
-        ptterms.add(" afghan ");
-        ptterms.add(" christian ");
-        ptterms.add(" civilian ");
-        ptterms.add(" fellow human ");
-        ptterms.add(" foreigner ");
-        ptterms.add(" human ");
-        ptterms.add(" innocent ");
-        ptterms.add(" intruder ");
-        ptterms.add(" kurd ");
-        ptterms.add(" migrant ");
-        ptterms.add(" muslim ");
-        ptterms.add(" people trafficker OR human trafficker ");
-        ptterms.add(" rabid dog ");
-        ptterms.add(" refugee ");
-        ptterms.add(" smuggler OR smuggling ");
-        ptterms.add(" stow away ");
-        ptterms.add(" syrian ");
-        ptterms.add(" terrorist ");
-        ptterms.add(" yemeni ");
-        index += ptterms.size();
-        // Individuals
-        termTypes.put(i, "Individuals");
-        ArrayList iterms = new ArrayList();
-        allterms.put(i, iterms);
-        i++;
-        iterms.add(" alan kurdi "); // 3 year old boy washed up on beach (https://en.wikipedia.org/wiki/Death_of_Alan_Kurdi)
-        iterms.add(" assad "); // Leader of Syria
-        iterms.add(" david cameron OR teresa may "); // UK Prime Ministers
-        iterms.add(" erdoğan OR erdogan "); // Leader of Turkey
-        iterms.add(" gutteres OR grandi "); // Head of UNHCR
-        iterms.add(" hammond OR johnson OR foreign secretary "); // UK foreign secretarys
-        iterms.add(" hollande "); // France Prime Minister
-        iterms.add(" juncker "); // Head of EC
-        iterms.add(" ki-moon OR ki moon OR annan"); // Head of UN
-        iterms.add(" merkel "); // Germany Prime Minister
-        iterms.add(" nichola sturgeon "); // Leader of The SNP
-        iterms.add(" nigel farage "); // Leader of UKIP
-        iterms.add(" putin "); // Russian president
-        iterms.add(" steven woolfe "); // UKIP Migration Spokesman and UK MEP
-        index += iterms.size();
-        // Organisations
-        // Political
-        termTypes.put(i, "Polictical Organisations");
-        ArrayList poterms = new ArrayList();
-        allterms.put(i, poterms);
-        i++;
-        poterms.add(" eu turkey deal ");
-        poterms.add(" edl ");
-        poterms.add(" far right ");
-        poterms.add(" is ");
-        poterms.add(" isil ");
-        poterms.add(" isis ");
-        poterms.add(" islamic state ");
-        poterms.add(" nazi ");
-        poterms.add(" right wing ");
-        poterms.add(" ukip ");
-        index += poterms.size();
-        // Relief Agencies
-        termTypes.put(i, "Relief Agencies");
-        ArrayList raterms = new ArrayList();
-        allterms.put(i, raterms);
-        i++;
-        raterms.add(" amnesty international ");
-        raterms.add(" oxfam ");
-        raterms.add(" un ");
-        raterms.add(" unicef ");
-        raterms.add(" unhcr ");
-        raterms.add(" unrwa ");
-        raterms.add(" msf ");
-        raterms.add(" red cross ");
-        index += raterms.size();
-        // Places
-        // Large Regions
-        termTypes.put(i, "Large Regions");
-        ArrayList lrterms = new ArrayList();
-        allterms.put(i, lrterms);
-        i++;
-        lrterms.add(" africa ");
-        lrterms.add(" asia ");
-        lrterms.add(" eu ");
-        lrterms.add(" europe ");
-        lrterms.add(" mediterranean ");
-        index += lrterms.size();
-        // Countries
-        termTypes.put(i, "Countries");
-        ArrayList cterms = new ArrayList();
-        allterms.put(i, cterms);
-        i++;
-        cterms.add(" afghanistan ");
-        index++;
-        cterms.add(" egypt ");
-        index++;
-        cterms.add(" england OR britain OR uk ");
-        index++;
-        cterms.add(" france OR french ");
-        index++;
-        cterms.add(" germany ");
-        index++;
-        cterms.add(" greek OR greece ");
-        index++;
-        cterms.add(" iraq ");
-        index++;
-        cterms.add(" israel ");
-        index++;
-        cterms.add(" italy OR italian ");
-        index++;
-        cterms.add(" jordan ");
-        index++;
-        cterms.add(" lebanon OR lebanese ");
-        index++;
-        cterms.add(" macedonia ");
-        index++;
-        cterms.add(" russia ");
-        index++;
-        cterms.add(" spain ");
-        index++;
-        cterms.add(" syria ");
-        index++;
-        int syriaIndex = index;
-        cterms.add(" turkey ");
-        index++;
-        cterms.add(" west bank ");
-        index++;
-        cterms.add(" yemen ");
-        index++;
-        // Regions in Countries
-        termTypes.put(i, "Regions in Countries");
-        ArrayList ricterms = new ArrayList();
-        allterms.put(i, ricterms);
-        i++;
-        ricterms.add(" bodrum "); // Region of Turkey
-        ricterms.add(" lesbos "); // Greek island
-        index += ricterms.size();
-        // Syrian Cities
-        termTypes.put(i, "Syrian Cities");
-        ArrayList scterms = new ArrayList();
-        allterms.put(i, scterms);
-        i++;
-        scterms.add(" aleppo ");
-        scterms.add(" damascus ");
-        scterms.add(" homs ");
-        scterms.add(" raqqa ");
-        index += scterms.size();
-        // Syrian Refugee Camps (see https://en.wikipedia.org/wiki/Syrian_refugee_camps)
-        // Refugee Camps in Turkey
-        termTypes.put(i, "Refugee Camps in Turkey");
-        ArrayList rcitterms = new ArrayList();
-        allterms.put(i, rcitterms);
-        i++;
-        rcitterms.add(" altınözü OR altinozu ");
-        rcitterms.add(" yayladağı OR yayladagi ");
-        rcitterms.add(" apaydın ");
-        rcitterms.add(" güveççi OR guvecci ");
-        rcitterms.add(" ceylanpınar ");
-        rcitterms.add(" akçakale OR akcakale ");
-        rcitterms.add(" harran ");
-        rcitterms.add(" viranşehir OR viransehir ");
-        rcitterms.add(" suruç OR suruc ");
-        rcitterms.add(" islahiye ");
-        rcitterms.add(" karkamış OR karkamis ");
-        rcitterms.add(" nizip ");
-        rcitterms.add(" öncüpınar OR oncupinar ");
-        rcitterms.add(" elbeyli besiriye ");
-        rcitterms.add(" merkez ");
-        rcitterms.add(" cevdetiye ");
-        rcitterms.add(" sarıçam OR saricam ");
-        rcitterms.add(" midyat ");
-        rcitterms.add(" beydağı or beydagi ");
-        index += rcitterms.size();
-        // Refugee Camps in Jordan
-        termTypes.put(i, "Refugee Camps in Jordan");
-        ArrayList rcijterms = new ArrayList();
-        allterms.put(i, rcijterms);
-        i++;
-        rcijterms.add(" zaatari ");
-        rcijterms.add(" azraq ");
-        rcijterms.add(" mrajeeb al fhood ");
-        rcijterms.add(" rukban ");
-        rcijterms.add(" hadalat ");
-        index += rcijterms.size();
-        // Refugee Camps in Iraq
-        termTypes.put(i, "Refugee Camps in Iraq");
-        ArrayList rciiterms = new ArrayList();
-        allterms.put(i, rciiterms);
-        i++;
-        rciiterms.add(" domiz ");
-        rciiterms.add(" gawilan ");
-        rciiterms.add(" akre ");
-        rciiterms.add(" darashakran ");
-        rciiterms.add(" kawergosk ");
-        rciiterms.add(" qushtapa ");
-        rciiterms.add(" basirma ");
-        rciiterms.add(" arbat ");
-        rciiterms.add(" al-obaidi OR al obaidi OR alobaidi ");
-        index += rciiterms.size();
-        // Refugee Camps in Macedonia
-        termTypes.put(i, "Refugee Camps in Macedonia");
-        ArrayList rcimterms = new ArrayList();
-        allterms.put(i, rcimterms);
-        i++;
-        rcimterms.add(" gevgelija ");
-        rcimterms.add(" tabanovce ");
-        index += rcimterms.size();
-        // Refugee Camps in Greece
-        termTypes.put(i, "Refugee Camps in Greece");
-        ArrayList rcigterms = new ArrayList();
-        allterms.put(i, rcigterms);
-        i++;
-        rcigterms.add(" doliana ");
-        rcigterms.add(" katsika ");
-        rcigterms.add(" konitsa ");
-        rcigterms.add(" filippada ");
-        rcigterms.add(" tselepevo ");
-        rcigterms.add(" alexandreia ");
-        rcigterms.add(" cherso ");
-        rcigterms.add(" derveni alexill ");
-        rcigterms.add(" eko ");
-        rcigterms.add(" diavata ");
-        rcigterms.add(" giannitsa ");
-        rcigterms.add(" idomeni ");
-        rcigterms.add(" kalochori OR iliadi ");
-        rcigterms.add(" lagadika ");
-        rcigterms.add(" nea kavala ");
-        rcigterms.add(" oraiokastro ");
-        rcigterms.add(" piera ");
-        rcigterms.add(" sinatex ");
-        rcigterms.add(" sindos ");
-        rcigterms.add(" softex ");
-        rcigterms.add(" thessaloniki ");
-        rcigterms.add(" vasilika ");
-        rcigterms.add(" veria ");
-        rcigterms.add(" viagiohori ");
-        rcigterms.add(" chalkero ");
-        rcigterms.add(" drama ");
-        rcigterms.add(" andravidas ");
-        rcigterms.add(" oiuofyta ");
-        rcigterms.add(" ritsona ");
-        rcigterms.add(" thermopiles ");
-        rcigterms.add(" kipselochori ");
-        rcigterms.add(" larissa ");
-        rcigterms.add(" volos ");
-        rcigterms.add(" agios andreas ");
-        rcigterms.add(" elefsina ");
-        rcigterms.add(" eleonas ");
-        rcigterms.add(" elliniko ");
-        rcigterms.add(" lavrio ");
-        rcigterms.add(" malakasa ");
-        rcigterms.add(" piraeus ");
-        rcigterms.add(" schisto ");
-        rcigterms.add(" skaramagas ");
-        rcigterms.add(" victoria square ");
-        rcigterms.add(" moria ");
-        rcigterms.add(" chios ");
-        rcigterms.add(" vial ");
-        rcigterms.add(" vathy ");
-        rcigterms.add(" leros ");
-        rcigterms.add(" lepida ");
-        rcigterms.add(" kos ");
-        rcigterms.add(" rhodes ");
-        index += rcigterms.size();
-        // Other Camp Terms
-        termTypes.put(i, "Other Camp Terms");
-        ArrayList octterms = new ArrayList();
-        allterms.put(i, octterms);
-        i++;
-        octterms.add(" calais ");
-        octterms.add(" camp ");
-        octterms.add(" container camp ");
-        octterms.add(" jungle OR jules ferry "); // https://en.wikipedia.org/wiki/Calais_Jungle https://en.wikipedia.org/wiki/Migrants_around_Calais
-        octterms.add(" tent camp ");
-        index += octterms.size();
-
-        // Other Key terms
-        // Border Movement Terms
-        termTypes.put(i, "Border Movement Terms");
-        ArrayList bmterms = new ArrayList();
-        allterms.put(i, bmterms);
-        i++;
-        bmterms.add(" across the border ");
-        bmterms.add(" border ");
-        bmterms.add(" crossing ");
-        bmterms.add(" boat ");
-        bmterms.add(" displacement ");
-        bmterms.add(" exodus ");
-        bmterms.add(" fence OR wall ");
-        bmterms.add(" flee OR fleeing ");
-        bmterms.add(" lorry OR lorries ");
-        bmterms.add(" migrant ");
-        bmterms.add(" movement ");
-        bmterms.add(" surge ");
-        index += bmterms.size();
-        // Movement Scale Descriptors
-        termTypes.put(i, "Movement Scale Descriptors");
-        ArrayList msdterms = new ArrayList();
-        allterms.put(i, msdterms);
-        i++;
-        msdterms.add(" dam has burst ");
-        msdterms.add(" flee ");
-        msdterms.add(" flood ");
-        msdterms.add(" flow ");
-        msdterms.add(" influx ");
-        msdterms.add(" swarm ");
-        msdterms.add(" torrent ");
-        msdterms.add(" engulf ");
-        msdterms.add(" storm ");
-        msdterms.add(" swell ");
-        msdterms.add(" swamp ");
-        msdterms.add(" tide ");
-        msdterms.add(" wave ");
-        index += msdterms.size();
-        // Miscellaneous Key Terms
-        termTypes.put(i, "Miscellaneous Key Terms");
-        ArrayList mktterms = new ArrayList();
-        allterms.put(i, mktterms);
-        i++;
-        mktterms.add(" aid ");
-        mktterms.add(" asylum ");
-        mktterms.add(" attack ");
-        mktterms.add(" brexit ");
-        mktterms.add(" burdon ");
-        mktterms.add(" child OR children ");
-        mktterms.add(" chaos ");
-        mktterms.add(" crime ");
-        mktterms.add(" crisis ");
-        mktterms.add(" deal ");
-        mktterms.add(" desperate OR desparation ");
-        mktterms.add(" drown ");
-        mktterms.add(" dying OR dies OR death ");
-        mktterms.add(" disease ");
-        mktterms.add(" extremism ");
-        mktterms.add(" economic ");
-        mktterms.add(" famine ");
-        mktterms.add(" foreign ");
-        mktterms.add(" hate crime ");
-        mktterms.add(" hunger OR malnutrition OR malnourished OR starving ");
-        mktterms.add(" illegal ");
-        mktterms.add(" immigration ");
-        mktterms.add(" imperialism ");
-        mktterms.add(" islam ");
-        mktterms.add(" islamophobia ");
-        mktterms.add(" mop OR stem the flow ");
-        mktterms.add(" moral ");
-        mktterms.add(" moral imperialism ");
-        mktterms.add(" open borders OR open border policy");
-        mktterms.add(" nationalism OR nation ");
-        mktterms.add(" plight ");
-        mktterms.add(" relief ");
-        mktterms.add(" resettlement ");
-        mktterms.add(" security ");
-        mktterms.add(" threat ");
-        mktterms.add(" threat to security ");
-        mktterms.add(" terror ");
-        mktterms.add(" terrorism ");
-        mktterms.add(" tragedy OR tragic ");
-        mktterms.add(" trafficking ");
-        mktterms.add(" work ");
-        mktterms.add(" war ");
-        index += mktterms.size();
-        int numberOfTerms = index + 1;
+        Object[] allTerms = getAllTerms();
+        TreeMap<Integer, ArrayList<String>> allterms = (TreeMap<Integer, ArrayList<String>>) allTerms[0];
+        HashMap<Integer, String> termTypes = (HashMap<Integer, String>) allTerms[1];
+        int numberOfTerms = (Integer) allTerms[2];
 
         /**
          * Initialise directories
@@ -479,7 +99,7 @@ public class Text_Processor2 {
         Files = new Text_Files(dataDirName);
         String dirname;
         dirname = "LexisNexis-20171127T155442Z-001";
-//        dirname = "LexisNexis-20171122T195223Z-001";
+//        dirname ="LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outDir;
         inputDir = new File(Files.getLexisNexisInputDataDir(),
@@ -520,6 +140,10 @@ public class Text_Processor2 {
          * inputDir contains only directories and no files.
          */
         for (File input0 : inputs0) {
+
+            expressArticleCount = 0;
+            guardianArticleCount = 0;
+
             name = input0.getName();
             outFile = new File(outDir, name + "Counts.csv");
             pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
@@ -549,7 +173,7 @@ public class Text_Processor2 {
             grandTotalArticleCountsForTerms = new int[numberOfTerms];
             grandTotalTermCountOnDays = new HashMap<>();
             grandTotalArticleCountsForTermsOnDays = new HashMap<>();
-            i = 0;
+            int i = 0;
             Iterator<Integer> ite;
             ArrayList<String> terms;
             Iterator<String> ite2;
@@ -580,7 +204,7 @@ public class Text_Processor2 {
                 /**
                  * Filter to only process the HTML files.
                  */
-                if (input1.getName().endsWith("htm")) {
+                if (input1.getName().endsWith("htm") || input1.getName().endsWith("HTML")) {
                     //System.out.println(input1);
                     /**
                      * Parse the HTML file and obtain part of the result.
@@ -610,7 +234,6 @@ public class Text_Processor2 {
                             addToCount(
                                     ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[3]).get(term),
                                     grandTotalArticleCountsForTermsOnDays.get(term));
-
                         }
                     }
                     if (writeHeadlines) {
@@ -638,7 +261,7 @@ public class Text_Processor2 {
              * Write header
              */
             String header;
-            header = "Term Type, Term, Total Term Count, Total Article Count";
+            header = "Term Type,Term,Total Term Count,Total Article Count";
             TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDay;
             TreeMap<DayOfWeek, Integer> grandTotalArticleCountsForTermsOnDay;
             Iterator<DayOfWeek> ite3;
@@ -646,12 +269,12 @@ public class Text_Processor2 {
             ite3 = mondayToSaturday.iterator();
             while (ite3.hasNext()) {
                 day = ite3.next();
-                header += ", Term Count On " + day;
+                header += ",Term Count On " + day;
             }
             ite3 = mondayToSaturday.iterator();
             while (ite3.hasNext()) {
                 day = ite3.next();
-                header += ", Article Count On " + day;
+                header += ",Article Count On " + day;
             }
             System.out.println(header);
             pwCounts.println(header);
@@ -675,12 +298,12 @@ public class Text_Processor2 {
 //                pwCounts.println(term + " Article count " + grandTotalArticleCountsForTerms[i]);
                     System.out.print(termType);
                     pwCounts.print(termType);
-                    System.out.print(", " + term);
-                    pwCounts.print(", " + term);
-                    System.out.print(", " + grandTotalTermCounts[i]);
-                    pwCounts.print(", " + grandTotalTermCounts[i]);
-                    System.out.print(", " + grandTotalArticleCountsForTerms[i]);
-                    pwCounts.print(", " + grandTotalArticleCountsForTerms[i]);
+                    System.out.print("," + term);
+                    pwCounts.print("," + term);
+                    System.out.print("," + grandTotalTermCounts[i]);
+                    pwCounts.print("," + grandTotalTermCounts[i]);
+                    System.out.print("," + grandTotalArticleCountsForTerms[i]);
+                    pwCounts.print("," + grandTotalArticleCountsForTerms[i]);
                     i++;
                     printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalTermCountOnDays.get(term));
                     printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalArticleCountsForTermsOnDays.get(term));
@@ -693,6 +316,8 @@ public class Text_Processor2 {
             if (writeHeadlines) {
                 pwHeadlines.close();
             }
+            System.out.println("expressArticleCount " + expressArticleCount);
+            System.out.println("guardianArticleCount " + guardianArticleCount);
         }
     }
 
@@ -709,11 +334,11 @@ public class Text_Processor2 {
             day = ite.next();
             i = grandTotalTermCountOnDay.get(day);
             if (i == null) {
-                System.out.print(", 0");
-                pw.print(", 0");
+                System.out.print(",0");
+                pw.print(",0");
             } else {
-                System.out.print(", " + i);
-                pw.print(", " + i);
+                System.out.print("," + i);
+                pw.print("," + i);
             }
         }
     }
@@ -742,7 +367,7 @@ public class Text_Processor2 {
         //System.out.println(node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        //System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName"+ nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -753,18 +378,14 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            //System.out.println("key " + key);
-            //System.out.println("value " + value);
+            //System.out.println("key"+ key);
+            //System.out.println("value"+ value);
             if (value.equalsIgnoreCase("The Express") || value.equalsIgnoreCase("The Guardian")) {
-                if (value.equalsIgnoreCase("The Guardian")) {
-                    isExpressArticle = false;
-                } else {
-                    isExpressArticle = true;
-                }
+                isExpressArticle = !value.equalsIgnoreCase("The Guardian");
                 return true;
                 //parseExpressNode(node);
             }
@@ -784,7 +405,7 @@ public class Text_Processor2 {
         //System.out.println(node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        //System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName"+ nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -795,12 +416,12 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            //System.out.println("key " + key);
-            //System.out.println("value " + value);
+            //System.out.println("key"+ key);
+            //System.out.println("value"+ value);
             if (key.equalsIgnoreCase("#text")) {
                 if (!value.equalsIgnoreCase("\n")) {
                     Date += value;
@@ -831,7 +452,7 @@ public class Text_Processor2 {
         //System.out.println(node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        //System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName"+ nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -842,12 +463,12 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            //System.out.println("key " + key);
-            //System.out.println("value " + value);
+            //System.out.println("key"+ key);
+            //System.out.println("value"+ value);
             if (!startTitle) {
                 if (value.equalsIgnoreCase("c7")) {
                     startTitle = true;
@@ -861,10 +482,10 @@ public class Text_Processor2 {
                      * perfect solution as some terms made up of several words
                      * might fall across two sentences and not really be terms
                      * at all, but just a set of words in the same order (e.g.
-                     * instead of counting "migrant crisis this might count "...
+                     * instead of counting"migrant crisis this might count"...
                      * migrant. Crisis ...").
                      */
-                    value = value.replaceAll("[^A-Za-z0-9]", " ");
+                    //value = value.replaceAll("[^A-Za-z0-9]"," ");
                     Title += value;
                 }
                 if (value.equalsIgnoreCase("c6")) {
@@ -890,10 +511,10 @@ public class Text_Processor2 {
      * @param node
      */
     boolean getSection(Node node) {
-        //System.out.println("Node " + node.toString());
+        //System.out.println("Node"+ node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        //System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName"+ nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -904,12 +525,12 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            //System.out.println("key " + key);
-            //System.out.println("value " + value);
+            //System.out.println("key"+ key);
+            //System.out.println("value"+ value);
             if (!startSection) {
                 if (value.equalsIgnoreCase("SECTION: ")) {
                     startSection = true;
@@ -935,10 +556,10 @@ public class Text_Processor2 {
      * @param node
      */
     boolean getLength(Node node) {
-        //System.out.println("Node " + node.toString());
+        //System.out.println("Node"+ node.toString());
         String nodeName;
         nodeName = node.nodeName();
-        //System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName"+ nodeName);
         int nodeAttributeIndex;
         Attributes nodeAttributes;
         Iterator<Attribute> iteA;
@@ -949,12 +570,12 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            //System.out.println("key " + key);
-            //System.out.println("value " + value);
+            //System.out.println("key"+ key);
+            //System.out.println("value"+ value);
             if (!startLength) {
                 if (value.equalsIgnoreCase("LENGTH: ")) {
                     startLength = true;
@@ -980,13 +601,13 @@ public class Text_Processor2 {
      * @param node
      */
     boolean getArticle(Node node) {
-        //System.out.println("Node " + node.toString());
+        //System.out.println("Node"+ node.toString());
         if (node.toString().equalsIgnoreCase("LOAD-DATE ")) {
             return true;
         }
         String nodeName;
         nodeName = node.nodeName();
-        //System.out.println("nodeName " + nodeName);
+        //System.out.println("nodeName"+ nodeName);
         // end at div
         int nodeAttributeIndex;
         Attributes nodeAttributes;
@@ -1003,20 +624,20 @@ public class Text_Processor2 {
 //            ite = childNodes.iterator();
 //            while (ite.hasNext()) {
 //                childNode = ite.next();
-//                System.out.println("Node " + childNode.toString());
-////                if (childNode.toString().equalsIgnoreCase("SECTION:")) {
+//                System.out.println("Node"+ childNode.toString());
+////                if (childNode.toString().equalsIgnoreCase("SECTION: ")) {
 ////                    startSection = true;
 ////                }
 //                nodeAttributeIndex = 0;
 //                nodeAttributes = node.attributes();
 //                iteA = nodeAttributes.iterator();
 //                while (iteA.hasNext()) {
-//                    System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+//                    System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
 //                    nodeAttribute = iteA.next();
 //                    key = nodeAttribute.getKey();
 //                    value = nodeAttribute.getValue();
-//                    System.out.println("key " + key);
-//                    System.out.println("value " + value);
+//                    System.out.println("key"+ key);
+//                    System.out.println("value"+ value);
 //                    if (!startLength) {
 //                        if (value.equalsIgnoreCase("c7")) {
 //                            startLength = true;
@@ -1041,12 +662,12 @@ public class Text_Processor2 {
         nodeAttributes = node.attributes();
         iteA = nodeAttributes.iterator();
         while (iteA.hasNext()) {
-            //System.out.println("nodeAttributeIndex " + nodeAttributeIndex);
+            //System.out.println("nodeAttributeIndex"+ nodeAttributeIndex);
             nodeAttribute = iteA.next();
             key = nodeAttribute.getKey();
             value = nodeAttribute.getValue();
-            //System.out.println("key " + key);
-            //System.out.println("value " + value);
+            //System.out.println("key"+ key);
+            //System.out.println("value"+ value);
             if (key.equalsIgnoreCase("#text")) {
                 if (!value.equalsIgnoreCase("\n")) {
                     if (value.equalsIgnoreCase("LOAD-DATE: ")) {
@@ -1063,10 +684,23 @@ public class Text_Processor2 {
                      * perfect solution as some terms made up of several words
                      * might fall across two sentences and not really be terms
                      * at all, but just a set of words in the same order (e.g.
-                     * instead of counting "migrant crisis this might count "...
+                     * instead of counting"migrant crisis this might count"...
                      * migrant. Crisis ...").
                      */
-                    value = value.replaceAll("[^A-Za-z0-9]", " ");
+                    //value = value.replaceAll("[^A-Za-z0-9]"," ");
+                    /**
+                     * Add space before punctuation and replace quotation marks
+                     * with spaces.
+                     */
+                    value = value.replaceAll("\\'", " ");
+                    value = value.replaceAll("\"", " ");
+                    value = value.replaceAll("\'", " ");
+                    value = value.replaceAll("\\.", " .");
+                    value = value.replaceAll("\\?", " ?");
+                    value = value.replaceAll("\\!", " !");
+                    value = value.replaceAll("\\,", " ,");
+                    value = value.replaceAll("\\;", " ;");
+                    value = value.replaceAll("\\:", " :");
                     Article += value + " ";
                 }
                 //return true;
@@ -1098,17 +732,15 @@ public class Text_Processor2 {
 
     /**
      * This method parses the HTML file and returns results that are packed into
-     * an Object[] result of size 5: result[0] is an int[] of size 3 containing
-     * counts of the numbers of mentions of the terms "refugee", "syria" and
-     * "brexit" respectively. result[1] is TreeMap with keys that are the
-     * DayOfWeek and values that are counts of the number of times the term
-     * "refugee" appears on those days. result[2] is TreeMap with keys that are
-     * the DayOfWeek and values that are counts of the number of times the term
-     * "syria" appears on those days. result[3] is TreeMap with keys that are
-     * the DayOfWeek and values that are counts of the number of times the term
-     * "brexit" appears on those days. result[4] is a TreeSet of DateHeadlines
-     * which provides the dated and headlines of articles that have mention of
-     * "syria" in them.
+     * an Object[] result of size 5. result[0] is an int[] containing counts of
+     * the numbers of mentions of each terms. result[1] is an int[] containing
+     * counts of the numbers of articles that mentions of each terms. result[2]
+     * is TreeMap with keys that are the DayOfWeek and values that are counts of
+     * the number of times each term appears in those days articles. result[3]
+     * is TreeMap with keys that are the DayOfWeek and values that are counts of
+     * the number of articles each term appears in those days. result[4] is a
+     * TreeSet of DateHeadlines which provides the dates and headlines of those
+     * articles that mention "Syria" in them.
      *
      * @param n
      * @param allterms
@@ -1141,7 +773,7 @@ public class Text_Processor2 {
         int[] totalArticleCountsForTerms = new int[n];
         result[1] = totalArticleCountsForTerms;
         int[] termCounts = new int[n];
-        int[] articleCountsForTerms = new int[n];
+        //int[] articleCountsForTerms = new int[n];
         TreeMap<String, TreeMap<DayOfWeek, Integer>> totalTermCountByDay;
         totalTermCountByDay = new TreeMap<>();
         TreeMap<String, TreeMap<DayOfWeek, Integer>> totalArticleCountForTermsByDay;
@@ -1160,7 +792,7 @@ public class Text_Processor2 {
                 totalTermCounts[i] = 0;
                 totalArticleCountsForTerms[i] = 0;
                 termCounts[i] = 0;
-                articleCountsForTerms[i] = 0;
+                //articleCountsForTerms[i] = 0;
                 i++;
                 totalTermCountByDay.put(term, new TreeMap<>());
                 totalArticleCountForTermsByDay.put(term, new TreeMap<>());
@@ -1191,7 +823,7 @@ public class Text_Processor2 {
         while (ite.hasNext()) {
 
             // if inExpress then do the next thing here...
-            //System.out.println("elementIndex " + elementIndex);
+            //System.out.println("elementIndex"+ elementIndex);
             element = ite.next();
             if (element.hasText()) {
                 //System.out.println(element.wholeText()); // Prints out entire document
@@ -1202,19 +834,19 @@ public class Text_Processor2 {
             elementAttributes = element.attributes();
             iteA = elementAttributes.iterator();
             while (iteA.hasNext()) {
-                //System.out.println("elementAttributeIndex " + elementAttributeIndex);
+                //System.out.println("elementAttributeIndex"+ elementAttributeIndex);
                 nodeAttribute = iteA.next();
                 key = nodeAttribute.getKey();
                 value = nodeAttribute.getValue();
-                //System.out.println("key " + key);
-                //System.out.println("value " + value);
+                //System.out.println("key"+ key);
+                //System.out.println("value"+ value);
                 elementAttributeIndex++;
             }
             nodeIndex = 0;
             nodes = element.childNodes();
             iteN = nodes.iterator();
             while (iteN.hasNext()) {
-                //System.out.println("nodeIndex " + nodeIndex);
+                //System.out.println("nodeIndex"+ nodeIndex);
                 node = iteN.next();
                 if (inArticle) {
                     if (gotDate) {
@@ -1224,7 +856,7 @@ public class Text_Processor2 {
                                     gotArticle = getArticle(node);
                                 } else {
                                     gotLength = getLength(node);
-                                    Article = "";
+                                    Article = " "; // The space could be important.
                                 }
                             } else {
                                 gotSection = getSection(node);
@@ -1238,7 +870,7 @@ public class Text_Processor2 {
                     } else {
                         //System.out.println("In Express Article");
                         gotDate = getDate(node);
-                        Title = "";
+                        Title = " ";  // The space could be important.
                     }
                 } else {
                     inArticle = isArticleNode(node);
@@ -1248,55 +880,68 @@ public class Text_Processor2 {
             }
             if (gotArticle) {
                 //System.out.println("Got everything needed to process article... Process and reset.");
-                //System.out.println("Date " + Date);
+                //System.out.println("Date" + Date);
                 LocalDate ld = parseDate(Date);
-                //System.out.println("Title " + Title);
-                //System.out.println("Section " + Section);
-                //System.out.println("Length " + Length);
-                //System.out.println("Article " + Article);
-                DayOfWeek day = ld.getDayOfWeek();
-                i = 0;
-                iteB = allterms.keySet().iterator();
-                while (iteB.hasNext()) {
-                    terms = allterms.get(iteB.next());
-                    ite2 = terms.iterator();
-                    while (ite2.hasNext()) {
-                        term = ite2.next();
-                        termCounts[i] += getTermCount(term, Article);
-                        if (termCounts[i] > 0) {
-                            totalTermCounts[i] += termCounts[i];
-                            totalArticleCountsForTerms[i]++;
-                            addToCount(totalArticleCountForTermsByDay.get(term), day, 1);
-                        }
-                        addToCount(totalTermCountByDay.get(term), day, termCounts[i]);
-                        i++;
+
+                // Filter for a given time period
+                //if (ld.isAfter(LocalDate.of(2013, Month.JANUARY, 1)) && ld.isBefore(LocalDate.of(2018, Month.JANUARY, 1))) {
+                //if (ld.isAfter(LocalDate.of(2013, Month.JANUARY, 1)) && ld.isBefore(LocalDate.of(2017, Month.JANUARY, 1))) {
+                if (ld.isAfter(LocalDate.of(2015, Month.AUGUST, 29)) && ld.isBefore(LocalDate.of(2016, Month.DECEMBER, 24))) {
+                    if (isExpressArticle) {
+                        expressArticleCount++;
+                    } else {
+                        guardianArticleCount++;
                     }
-                }
-                /**
-                 * Store DateHeadline's for those articles on Saturdays that
-                 * contain the term " syria ".
-                 */
-                if (termCounts[0] > 0) {
-                    if (ld.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
-                        if (!isExpressArticle) {
-                            // Fire off to Guardian Open Data to try to get page number...
-                            int code = 1;
-
-                            String title;
-                            title = Title.replaceAll(" ", "-");
-                            title = title.replaceAll("\\.", "");
-                            title = title.replaceAll(";", "");
-                            title = title.replaceAll(":", "");
-                            title = title.replaceAll("\\?", "");
-                            title = title.replaceAll("!", "");
-
-//                            String url;
-//                            url = "http://content.guardianapis.com/search?show-fields=newspaperPageNumber%2CnewspaperEditionDate&q="
-//                                    + title + "&api-key=" + GuardianAPIKey;
+                    //System.out.println("Title" + Title);
+                    //System.out.println("Section" + Section);
+                    //System.out.println("Length" + Length);
+                    //System.out.println("Article" + Article);
+                    DayOfWeek day = ld.getDayOfWeek();
+                    i = 0;
+                    iteB = allterms.keySet().iterator();
+                    while (iteB.hasNext()) {
+                        terms = allterms.get(iteB.next());
+                        ite2 = terms.iterator();
+                        while (ite2.hasNext()) {
+                            term = ite2.next();
+                            termCounts[i] += getTermCount(term, Article);
+                            if (termCounts[i] > 0) {
+                                totalTermCounts[i] += termCounts[i];
+                                totalArticleCountsForTerms[i]++;
+                                addToCount(totalArticleCountForTermsByDay.get(term), day, 1);
+                            }
+                            addToCount(totalTermCountByDay.get(term), day, termCounts[i]);
+                            i++;
                         }
+                    }
+                    /**
+                     * Store DateHeadline's for those articles on Saturdays that
+                     * contain the term"syria".
+                     */
+                    if (termCounts[0] > 0) {
+                        if (ld.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
 
-                        syriaDateHeadlines.add(new DateOutlineDetails(ld,
-                                Section, Length, Title));
+//                        // Fire off to Guardian Open Data to try to get page number...
+//                        // This is now done in agdt-web in uk.ac.leeds.ccg.andyt.web.guardian.GuardianGetPage
+//                        // See 
+//                        if (!isExpressArticle) {
+//                            int code = 1;
+//
+//                            String title;
+//                            title = Title.replaceAll(" ","-");
+//                            title = title.replaceAll("\\.","");
+//                            title = title.replaceAll(";","");
+//                            title = title.replaceAll(":","");
+//                            title = title.replaceAll("\\?","");
+//                            title = title.replaceAll("!","");
+//
+//                            String url;
+//                            url ="http://content.guardianapis.com/search?show-fields=newspaperPageNumber%2CnewspaperEditionDate&q="
+//                                    + title +"&api-key="+ GuardianAPIKey;
+//                        }
+                            syriaDateHeadlines.add(new DateOutlineDetails(ld,
+                                    Section, Length, Title));
+                        }
                     }
                 }
                 for (i = 0; i < n; i++) {
@@ -1339,8 +984,7 @@ public class Text_Processor2 {
         }
     }
 
-    public void addToCount(
-            TreeMap<DayOfWeek, Integer> termCount,
+    public void addToCount(TreeMap<DayOfWeek, Integer> termCount,
             DayOfWeek day, int count) {
         int i;
         if (termCount.containsKey(day)) {
@@ -1358,21 +1002,43 @@ public class Text_Processor2 {
      * upper case and for term with a capitalised/uppercase first letter.
      *
      * @param term
-     * @param line
+     * @param text
      * @return
      */
-    int getTermCount(String term, String line) {
-        String lowerCaseLine = Generic_StaticString.getLowerCase(line);
+    int getTermCount(String term, String text) {
+        //String lowerCaseLine = Generic_StaticString.getLowerCase(line);
         int result = 0;
-        if (term.contains("OR")) {
+        if (term.contains(" OR ")) {
             String[] split;
-            split = term.split("OR");
+            split = term.split(" OR ");
             for (String split1 : split) {
-                result += lowerCaseLine.split(split1).length - 1;
+                //result += lowerCaseLine.split(split1).length - 1;
+                result += getTermCount0(split1, text);
             }
         } else {
-            result += lowerCaseLine.split(term).length - 1;
+            //result += lowerCaseLine.split(term).length - 1;
+            result += getTermCount0(term, text);
         }
+        return result;
+    }
+
+    int getTermCount0(String term, String text) {
+        int result = 0;
+        String s;
+        /**
+         * Try with a capital first letter (as terms at the start of a sentence
+         * have capital first letters).
+         */
+        s = Generic_StaticString.getCapitalFirstLetter(term);
+        /**
+         * Adding a space before and after the term to distinguish from words
+         * that contain terms.
+         */
+        //s = " " + s + " ";
+        result += text.split(s).length - 1;
+        //s = " " + term + " ";
+        s = term;
+        result += text.split(s).length - 1;
         return result;
     }
 
@@ -1399,11 +1065,11 @@ public class Text_Processor2 {
         split2 = split[1].split(" ");
         year = split2[0];
         //dayOfWeek = split2[1];
-//        String stringDate = "";
-//        stringDate += "year " + year;
-//        stringDate += " month " + month;
-//        stringDate += " dayOfMonth " + dayOfMonth;
-//        stringDate += " dayOfWeek " + dayOfWeek;
+//        String stringDate = " ";
+//        stringDate +="year"+ year;
+//        stringDate +="month"+ month;
+//        stringDate +="dayOfMonth"+ dayOfMonth;
+//        stringDate +="dayOfWeek"+ dayOfWeek;
 //        System.out.println(stringDate);
         Month m = Month.valueOf(Generic_StaticString.getUpperCase(month));
         result = LocalDate.of(Integer.valueOf(year), m, Integer.valueOf(dayOfMonth));
@@ -1474,5 +1140,420 @@ public class Text_Processor2 {
                 return dateComparison;
             }
         }
+    }
+
+    /**
+     * Initialise terms
+     */
+    Object[] getAllTerms() {
+        Object[] result;
+        result = new Object[3];
+        TreeMap<Integer, ArrayList<String>> allterms = new TreeMap<>();
+        result[0] = allterms;
+        HashMap<Integer, String> termTypes = new HashMap<>();
+        result[1] = termTypes;
+        int i = 0;
+        int index = -1;
+        // Key Migrant/Refugee Terms
+        termTypes.put(i, "Key Migrant/Refugee Terms");
+        ArrayList mrterms = new ArrayList();
+        allterms.put(i, mrterms);
+        i++;
+        mrterms.add("asylum seeker");
+        mrterms.add("economic migrant");
+        mrterms.add("humanitarian crisis");
+        mrterms.add("illegal immigrant");
+        mrterms.add("illegal migrant");
+        mrterms.add("immigration crisis");
+        mrterms.add("migrant crisis");
+        mrterms.add("migrant flood OR flood of migrants");
+        mrterms.add("refugee crisis");
+        mrterms.add("refugee camp");
+        index += mrterms.size();
+        // People Terms
+        // Types of People Terms
+        termTypes.put(i, "Types of People");
+        ArrayList ptterms = new ArrayList();
+        allterms.put(i, ptterms);
+        i++;
+        ptterms.add("alien");
+        /**
+         * WARNING: Although many of these terms are people from a country,
+         * these terms are the same as those for other things belonging to the
+         * place e.g. a Russian is a person from Russia and a Russian tank is a
+         * tank from Russia.
+         */
+        ptterms.add("afghan");
+        ptterms.add("british");
+        ptterms.add("christian");
+        ptterms.add("civilian");
+        ptterms.add("english");
+        ptterms.add("fellow human");
+        ptterms.add("foreigner");
+        ptterms.add("french");
+        ptterms.add("greek");
+        ptterms.add("human");
+        ptterms.add("innocent");
+        ptterms.add("intruder");
+        ptterms.add("iraqi");
+        ptterms.add("kurd");
+        ptterms.add("lebanese");
+        ptterms.add("migrant");
+        ptterms.add("muslim");
+        ptterms.add("people trafficker OR human trafficker");
+        ptterms.add("rabid dog");
+        ptterms.add("refugee");
+        ptterms.add("smuggler OR smuggling");
+        ptterms.add("stow away");
+        ptterms.add("syrian");
+        ptterms.add("terrorist");
+        ptterms.add("yemeni");
+        index += ptterms.size();
+        // Individuals
+        termTypes.put(i, "Individuals");
+        ArrayList iterms = new ArrayList();
+        allterms.put(i, iterms);
+        i++;
+        iterms.add("Alan Kurdi OR Aylan Kurdi"); // 3 year old boy washed up on beach (https://en.wikipedia.org/wiki/Death_of_Alan_Kurdi)
+        iterms.add("Assad"); // Leader of Syria
+        iterms.add("David Cameron OR Teresa May"); // UK Prime Ministers
+        iterms.add("Erdoğan OR erdogan"); // Leader of Turkey
+        iterms.add("Gutteres OR Grandi"); // Head of UNHCR
+        iterms.add("Hammond OR Johnson OR foreign secretary"); // UK foreign secretaries
+        iterms.add("Hollande"); // France Prime Minister
+        iterms.add("Juncker"); // Head of EC
+        iterms.add("Ki-Moon OR Ki Moon OR Annan"); // Head of UN
+        iterms.add("Merkel"); // Germany Prime Minister
+        iterms.add("Sturgeon"); // Leader of The SNP
+        iterms.add("Nigel Farage"); // Leader of UKIP
+        iterms.add("Putin"); // Russian president
+        iterms.add("Steven Woolfe"); // UKIP Migration Spokesman and UK MEP
+        index += iterms.size();
+        // Organisations
+        // Political
+        termTypes.put(i, "Polictical Organisations");
+        ArrayList poterms = new ArrayList();
+        allterms.put(i, poterms);
+        i++;
+        poterms.add("EU Turkey Deal OR EU-Turkey Deal OR EU-Turkey deal OR deal between the EU and Turkey");
+        poterms.add("EDL");
+        poterms.add("far right");
+        poterms.add("IS OR islamic state OR Islamic State");
+        poterms.add("ISIL");
+        poterms.add("ISIS");
+        poterms.add("nazi");
+        poterms.add("right wing");
+        poterms.add("UKIP");
+        index += poterms.size();
+        // Relief Agencies
+        termTypes.put(i, "Relief Agencies");
+        ArrayList raterms = new ArrayList();
+        allterms.put(i, raterms);
+        i++;
+        raterms.add("Amnesty International");
+        raterms.add("Oxfam");
+        raterms.add("UN");
+        raterms.add("UNICEF");
+        raterms.add("UNHCR");
+        raterms.add("UNRWA");
+        raterms.add("MSF");
+        raterms.add("Red Cross");
+        index += raterms.size();
+        // Places
+        // Large Regions
+        termTypes.put(i, "Large Regions");
+        ArrayList lrterms = new ArrayList();
+        allterms.put(i, lrterms);
+        i++;
+        lrterms.add("Africa");
+        lrterms.add("Asia");
+        lrterms.add("EU");
+        lrterms.add("Europe");
+        lrterms.add("Mediterranean");
+        index += lrterms.size();
+        // Countries
+        termTypes.put(i, "Countries");
+        ArrayList cterms = new ArrayList();
+        allterms.put(i, cterms);
+        i++;
+        cterms.add("Afghanistan");
+        index++;
+        /**
+         * As with Egypt, some spaces are added here on purpose so as to not
+         * count longer terms that start in the same way e.g. Egypt and
+         * Egyptian.
+         */
+        cterms.add("Egypt ");
+        index++;
+        cterms.add("England OR Britain OR UK");
+        index++;
+        cterms.add("France");
+        index++;
+        cterms.add("Germany");
+        index++;
+        cterms.add("Greece");
+        index++;
+        cterms.add("Iraq ");
+        index++;
+        cterms.add("Israel ");
+        index++;
+        cterms.add("Italy");
+        index++;
+        cterms.add("Jordan ");
+        index++;
+        cterms.add("Lebanon");
+        index++;
+        cterms.add("Macedonia ");
+        index++;
+        cterms.add("Russia ");
+        index++;
+        cterms.add("Spain");
+        index++;
+        cterms.add("Syria ");
+        index++;
+        int syriaIndex = index;
+        cterms.add("Turkey");
+        index++;
+        cterms.add("West Bank");
+        index++;
+        cterms.add("Yemen ");
+        index++;
+        // Regions in Countries
+        termTypes.put(i, "Regions in Countries");
+        ArrayList ricterms = new ArrayList();
+        allterms.put(i, ricterms);
+        i++;
+        ricterms.add("Bodrum"); // Region of Turkey
+        ricterms.add("Lesbos"); // Greek island
+        index += ricterms.size();
+        // Syrian Cities
+        termTypes.put(i, "Syrian Cities");
+        ArrayList scterms = new ArrayList();
+        allterms.put(i, scterms);
+        i++;
+        scterms.add("Aleppo");
+        scterms.add("Damascus");
+        scterms.add("Homs");
+        scterms.add("Raqqa");
+        index += scterms.size();
+        // Syrian Refugee Camps (see https://en.wikipedia.org/wiki/Syrian_refugee_camps)
+        // Refugee Camps in Turkey
+        termTypes.put(i, "Refugee Camps in Turkey");
+        ArrayList rcitterms = new ArrayList();
+        allterms.put(i, rcitterms);
+        i++;
+        rcitterms.add("Altınözü OR Altinozu");
+        rcitterms.add("Yayladağı OR Yayladagi");
+        rcitterms.add("apaydın");
+        rcitterms.add("Güveççi OR Guvecci");
+        rcitterms.add("Ceylanpınar");
+        rcitterms.add("Akçakale OR Akcakale");
+        rcitterms.add("Harran");
+        rcitterms.add("Viranşehir OR Viransehir");
+        rcitterms.add("Suruç OR Suruc");
+        rcitterms.add("Islahiye");
+        rcitterms.add("Karkamış OR Karkamis");
+        rcitterms.add("Nizip");
+        rcitterms.add("Öncüpınar OR Oncupinar");
+        rcitterms.add("Elbeyli Besiriye");
+        rcitterms.add("Merkez");
+        rcitterms.add("Cevdetiye");
+        rcitterms.add("Sarıçam OR Saricam");
+        rcitterms.add("Midyat");
+        rcitterms.add("Beydağı or Beydagi");
+        index += rcitterms.size();
+        // Refugee Camps in Jordan
+        termTypes.put(i, "Refugee Camps in Jordan");
+        ArrayList rcijterms = new ArrayList();
+        allterms.put(i, rcijterms);
+        i++;
+        rcijterms.add("Zaatari");
+        rcijterms.add("Azraq");
+        rcijterms.add("Mrajeeb Al Fhood");
+        rcijterms.add("Rukban");
+        rcijterms.add("Hadalat");
+        index += rcijterms.size();
+        // Refugee Camps in Iraq
+        termTypes.put(i, "Refugee Camps in Iraq");
+        ArrayList rciiterms = new ArrayList();
+        allterms.put(i, rciiterms);
+        i++;
+        rciiterms.add("Domiz");
+        rciiterms.add("Gawilan");
+        rciiterms.add("Akre");
+        rciiterms.add("Darashakran");
+        rciiterms.add("Kawergosk");
+        rciiterms.add("Qushtapa");
+        rciiterms.add("Basirma");
+        rciiterms.add("Arbat");
+        rciiterms.add("Al-Obaidi OR Al Obaidi OR Alobaidi");
+        index += rciiterms.size();
+        // Refugee Camps in Macedonia
+        termTypes.put(i, "Refugee Camps in Macedonia");
+        ArrayList rcimterms = new ArrayList();
+        allterms.put(i, rcimterms);
+        i++;
+        rcimterms.add("Gevgelija");
+        rcimterms.add("Tabanovce");
+        index += rcimterms.size();
+        // Refugee Camps in Greece
+        termTypes.put(i, "Refugee Camps in Greece");
+        ArrayList rcigterms = new ArrayList();
+        allterms.put(i, rcigterms);
+        i++;
+        rcigterms.add("Doliana");
+        rcigterms.add("Katsika");
+        rcigterms.add("Konitsa");
+        rcigterms.add("Filippada");
+        rcigterms.add("Tselepevo");
+        rcigterms.add("Alexandreia");
+        rcigterms.add("Cherso");
+        rcigterms.add("Derveni Alexill");
+        rcigterms.add("Eko");
+        rcigterms.add("Diavata");
+        rcigterms.add("Giannitsa");
+        rcigterms.add("Idomeni");
+        rcigterms.add("Kalochori OR Iliadi");
+        rcigterms.add("Lagadika");
+        rcigterms.add("Nea Kavala");
+        rcigterms.add("Oraiokastro");
+        rcigterms.add("Piera");
+        rcigterms.add("Sinatex");
+        rcigterms.add("Sindos");
+        rcigterms.add("Softex");
+        rcigterms.add("Thessaloniki");
+        rcigterms.add("Vasilika");
+        rcigterms.add("Veria");
+        rcigterms.add("Viagiohori");
+        rcigterms.add("Chalkero");
+        rcigterms.add("Drama");
+        rcigterms.add("Andravidas");
+        rcigterms.add("Oiuofyta");
+        rcigterms.add("Ritsona");
+        rcigterms.add("Thermopiles");
+        rcigterms.add("Kipselochori");
+        rcigterms.add("Larissa");
+        rcigterms.add("Volos");
+        rcigterms.add("Agios Andreas");
+        rcigterms.add("Elefsina");
+        rcigterms.add("Eleonas");
+        rcigterms.add("Elliniko");
+        rcigterms.add("Lavrio");
+        rcigterms.add("Malakasa");
+        rcigterms.add("Piraeus");
+        rcigterms.add("Schisto");
+        rcigterms.add("Skaramagas");
+        rcigterms.add("Victoria Square");
+        rcigterms.add("Moria");
+        rcigterms.add("Chios");
+        rcigterms.add("Vial");
+        rcigterms.add("Vathy");
+        rcigterms.add("Leros");
+        rcigterms.add("Lepida");
+        rcigterms.add("Kos");
+        rcigterms.add("Rhodes");
+        index += rcigterms.size();
+        // Other Camp Terms
+        termTypes.put(i, "Other Camp Terms");
+        ArrayList octterms = new ArrayList();
+        allterms.put(i, octterms);
+        i++;
+        octterms.add("calais");
+        octterms.add("camp");
+        octterms.add("container camp");
+        octterms.add("jungle OR Jules Ferry"); // https://en.wikipedia.org/wiki/Calais_Jungle https://en.wikipedia.org/wiki/Migrants_around_Calais
+        octterms.add("tent camp");
+        index += octterms.size();
+
+        // Other Key terms
+        // Border Movement Terms
+        termTypes.put(i, "Border Movement Terms");
+        ArrayList bmterms = new ArrayList();
+        allterms.put(i, bmterms);
+        i++;
+        bmterms.add("across the border OR over the border");
+        bmterms.add("border");
+        bmterms.add("crossing");
+        bmterms.add("boat");
+        bmterms.add("displacement");
+        bmterms.add("exodus");
+        bmterms.add("fence OR wall");
+        bmterms.add("flee");
+        bmterms.add("lorry OR lorries");
+        bmterms.add("movement");
+        index += bmterms.size();
+        // Movement Scale Descriptors
+        termTypes.put(i, "Movement Scale Descriptors");
+        ArrayList msdterms = new ArrayList();
+        allterms.put(i, msdterms);
+        i++;
+        msdterms.add("dam has burst");
+        msdterms.add("flee");
+        msdterms.add("flood");
+        msdterms.add("flow");
+        msdterms.add("influx");
+        msdterms.add("swarm");
+        msdterms.add("torrent");
+        msdterms.add("engulf");
+        msdterms.add("storm");
+        msdterms.add("surge");
+        msdterms.add("swell");
+        msdterms.add("swamp");
+        msdterms.add("tide");
+        msdterms.add("wave");
+        index += msdterms.size();
+        // Miscellaneous Key Terms
+        termTypes.put(i, "Miscellaneous Key Terms");
+        ArrayList mktterms = new ArrayList();
+        allterms.put(i, mktterms);
+        i++;
+        mktterms.add("aid");
+        mktterms.add("asylum");
+        mktterms.add("attack");
+        mktterms.add("brexit");
+        mktterms.add("burden");
+        mktterms.add("child OR children");
+        mktterms.add("chaos");
+        mktterms.add("crime");
+        mktterms.add("crisis");
+        mktterms.add("deal");
+        mktterms.add("desperate OR desparation");
+        mktterms.add("drown OR drowning");
+        mktterms.add("dying OR dies OR death");
+        mktterms.add("disease");
+        mktterms.add("extremism");
+        mktterms.add("economic");
+        mktterms.add("famine");
+        mktterms.add("foreign");
+        mktterms.add("genocide");
+        mktterms.add("hate crime");
+        mktterms.add("hunger OR malnutrition OR malnourished OR starving");
+        mktterms.add("illegal");
+        mktterms.add("immigration");
+        mktterms.add("imperialism");
+        mktterms.add("islam ");
+        mktterms.add("islamophobia");
+        mktterms.add("mop OR stem the flow");
+        mktterms.add("moral");
+        mktterms.add("moral imperialism");
+        mktterms.add("open borders OR open border policy");
+        mktterms.add("nationalism OR nation");
+        mktterms.add("plight");
+        mktterms.add("relief");
+        mktterms.add("resettlement");
+        mktterms.add("security");
+        mktterms.add("subside");
+        mktterms.add("threat");
+        mktterms.add("threat to security");
+        mktterms.add("terror ");
+        mktterms.add("terrorism");
+        mktterms.add("tragedy OR tragic");
+        mktterms.add("trafficking");
+        mktterms.add("work");
+        mktterms.add("war");
+        index += mktterms.size();
+        int numberOfTerms = index + 1;
+        result[2] = numberOfTerms;
+        return result;
     }
 }
