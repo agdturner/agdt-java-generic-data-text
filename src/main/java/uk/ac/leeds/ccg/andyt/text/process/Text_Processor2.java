@@ -69,6 +69,9 @@ public class Text_Processor2 {
 
     int expressArticleCount;
     int guardianArticleCount;
+    
+    LocalDate startDate;
+                       LocalDate endDate;
 
     /**
      * This is the main processing method.
@@ -82,6 +85,25 @@ public class Text_Processor2 {
         boolean writeHeadlines;
         //writeHeadlines = true;
         writeHeadlines = false;
+        
+        /**
+         * Set start and end dates
+         */
+        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
+        startDate  = LocalDate.of(2015, Month.AUGUST, 29);
+        startDate  = LocalDate.of(2015, Month.JUNE, 1);
+        startDate  = LocalDate.of(2015, Month.SEPTEMBER, 1);
+        startDate  = LocalDate.of(2016, Month.APRIL, 1);
+//        startDate  = LocalDate.of(2016, Month.MARCH, 23);
+//        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
+//        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
+        endDate = LocalDate.of(2018, Month.NOVEMBER, 1);
+        endDate = LocalDate.of(2017, Month.NOVEMBER, 1);
+        endDate = LocalDate.of(2016, Month.DECEMBER, 24);
+        endDate = LocalDate.of(2015, Month.AUGUST, 31);
+        endDate = LocalDate.of(2015, Month.NOVEMBER, 30);
+        endDate = LocalDate.of(2016, Month.JUNE, 30);
+//        endDate = LocalDate.of(2016, Month.JUNE, 23);
 
         /**
          * Get the terms
@@ -106,7 +128,7 @@ public class Text_Processor2 {
                 dirname + "/LexisNexis");
         System.out.println(inputDir);
         outDir = new File(Files.getLexisNexisOutputDataDir(),
-                dirname + "/LexisNexis");
+                dirname + "/LexisNexis" + startDate.toString() + "_" + endDate.toString());
         if (!outDir.exists()) {
             outDir.mkdirs();
         }
@@ -883,10 +905,8 @@ public class Text_Processor2 {
                 //System.out.println("Date" + Date);
                 LocalDate ld = parseDate(Date);
 
-                // Filter for a given time period
-                //if (ld.isAfter(LocalDate.of(2013, Month.JANUARY, 1)) && ld.isBefore(LocalDate.of(2018, Month.JANUARY, 1))) {
-                //if (ld.isAfter(LocalDate.of(2013, Month.JANUARY, 1)) && ld.isBefore(LocalDate.of(2017, Month.JANUARY, 1))) {
-                if (ld.isAfter(LocalDate.of(2015, Month.AUGUST, 29)) && ld.isBefore(LocalDate.of(2016, Month.DECEMBER, 24))) {
+                // Filter for a given time period               
+                if (ld.isAfter(startDate) && ld.isBefore(endDate)) {
                     if (isExpressArticle) {
                         expressArticleCount++;
                     } else {
@@ -916,17 +936,15 @@ public class Text_Processor2 {
                     }
                     /**
                      * Store DateHeadline's for those articles on Saturdays that
-                     * contain the term"syria".
+                     * contain the term "syria".
                      */
                     if (termCounts[0] > 0) {
                         if (ld.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
-
 //                        // Fire off to Guardian Open Data to try to get page number...
 //                        // This is now done in agdt-web in uk.ac.leeds.ccg.andyt.web.guardian.GuardianGetPage
 //                        // See 
 //                        if (!isExpressArticle) {
 //                            int code = 1;
-//
 //                            String title;
 //                            title = Title.replaceAll(" ","-");
 //                            title = title.replaceAll("\\.","");
@@ -934,9 +952,11 @@ public class Text_Processor2 {
 //                            title = title.replaceAll(":","");
 //                            title = title.replaceAll("\\?","");
 //                            title = title.replaceAll("!","");
-//
 //                            String url;
-//                            url ="http://content.guardianapis.com/search?show-fields=newspaperPageNumber%2CnewspaperEditionDate&q="
+//                            url ="http://content.guardianapis.com/search"
+//                                    + "?show-fields="
+//                                    + "newspaperPageNumber%2C"
+//                                    + "newspaperEditionDate&q="
 //                                    + title +"&api-key="+ GuardianAPIKey;
 //                        }
                             syriaDateHeadlines.add(new DateOutlineDetails(ld,
@@ -959,13 +979,19 @@ public class Text_Processor2 {
             }
             elementIndex++;
         }
-
         result[2] = totalTermCountByDay;
         result[3] = totalArticleCountForTermsByDay;
         result[4] = syriaDateHeadlines;
         return result;
     }
 
+    /**
+     * Adds totalTermCountOnDay values to grandTotalTermCountOnDays values for
+     * the same keys.
+     *
+     * @param totalTermCountOnDay
+     * @param grandTotalTermCountOnDays
+     */
     public void addToCount(
             TreeMap<DayOfWeek, Integer> totalTermCountOnDay,
             TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDays) {
@@ -984,6 +1010,13 @@ public class Text_Processor2 {
         }
     }
 
+    /**
+     * Adds count to the day entry in termCount.
+     *
+     * @param termCount
+     * @param day
+     * @param count
+     */
     public void addToCount(TreeMap<DayOfWeek, Integer> termCount,
             DayOfWeek day, int count) {
         int i;
@@ -998,8 +1031,10 @@ public class Text_Processor2 {
 
     /**
      * A generalised method that counts the number of times term appears in
-     * line. This is done for the case that term is provided in, for term in all
-     * upper case and for term with a capitalised/uppercase first letter.
+     * text. The term may actually be multiple terms separated by " OR ". These
+     * are counted individually and summed. For individual term, terms the term
+     * count is added to for the term and for those instances where it has a
+     * capitalised first letter.
      *
      * @param term
      * @param text
@@ -1022,6 +1057,14 @@ public class Text_Processor2 {
         return result;
     }
 
+    /**
+     *
+     * @param term
+     * @param text
+     * @return A count of the number of times term appears in text. This
+     * includes the number of times the term with a capitalised first letter
+     * also appears.
+     */
     int getTermCount0(String term, String text) {
         int result = 0;
         String s;
@@ -1043,9 +1086,7 @@ public class Text_Processor2 {
     }
 
     /**
-     * For parsing a line. If it is thought to be a Date as it contains some key
-     * text that it is assumed all dates have, then the Date is returned
-     * otherwise an empty String is returned.
+     * For parsing a String into a LocalDate.
      *
      * @param line
      * @return
@@ -1076,6 +1117,13 @@ public class Text_Processor2 {
         return result;
     }
 
+    /**
+     * Reads a Guardian API Key from an ASCII text file. N.B. This is currently
+     * not used as a different program is used for processing using the Guardian
+     * API.
+     *
+     * @return
+     */
     String getGuardianAPIKey() {
         String result = "";
         File f;
@@ -1088,7 +1136,8 @@ public class Text_Processor2 {
             result = br.readLine();
             br.close();
         } catch (IOException ex) {
-            Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE,
+                    null, ex);
         }
         return result;
     }
@@ -1143,7 +1192,14 @@ public class Text_Processor2 {
     }
 
     /**
-     * Initialise terms
+     * Initialise terms. There are capitalisations and space that are important
+     * in these terms. There are also terms separated by " OR ". For those terms
+     * the article counts will just measure the the number of articles in the
+     * selections where either term appears and will sum up the number of times
+     * the terms appear in the articles.
+     *
+     * @TODO: This could all be read in from a file rather than being hard coded
+     * here.
      */
     Object[] getAllTerms() {
         Object[] result;
