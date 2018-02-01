@@ -65,13 +65,26 @@ public class Text_Processor2 {
         new Text_Processor2().run();
     }
 
+    /**
+     * For storing a Guardian API key. (This is currently not used.)
+     */
     String GuardianAPIKey;
 
+    /**
+     * For counting the number of articles in the Express data.
+     */
     int expressArticleCount;
+
+    /**
+     * For counting the number of articles in the Guardian data.
+     */
     int guardianArticleCount;
-    
-    LocalDate startDate;
-                       LocalDate endDate;
+
+    /**
+     * If true then a file with headlines for articles containing the terms
+     * "syria" are written out to file.
+     */
+    boolean writeHeadlines;
 
     /**
      * This is the main processing method.
@@ -82,31 +95,33 @@ public class Text_Processor2 {
          * Set writeHeadlines to be true to write out the titles of articles for
          * those articles containing the term "syria".
          */
-        boolean writeHeadlines;
         //writeHeadlines = true;
         writeHeadlines = false;
-        
+
         /**
          * Set start and end dates
          */
-        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
-        startDate  = LocalDate.of(2015, Month.AUGUST, 29);
-        startDate  = LocalDate.of(2015, Month.JUNE, 1);
-        startDate  = LocalDate.of(2015, Month.SEPTEMBER, 1);
-        startDate  = LocalDate.of(2016, Month.APRIL, 1);
+        int numberOfDateRanges = 3;
+        LocalDate[] startDates = new LocalDate[numberOfDateRanges];
+        LocalDate[] endDates = new LocalDate[numberOfDateRanges];
+//        startDate = LocalDate.of(2013, Month.JANUARY, 1);
+//        startDate = LocalDate.of(2015, Month.AUGUST, 29);
+        startDates[0] = LocalDate.of(2015, Month.JUNE, 1);
+        startDates[1] = LocalDate.of(2015, Month.SEPTEMBER, 1);
+        startDates[2] = LocalDate.of(2016, Month.APRIL, 1);
 //        startDate  = LocalDate.of(2016, Month.MARCH, 23);
 //        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
 //        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
-        endDate = LocalDate.of(2018, Month.NOVEMBER, 1);
-        endDate = LocalDate.of(2017, Month.NOVEMBER, 1);
-        endDate = LocalDate.of(2016, Month.DECEMBER, 24);
-        endDate = LocalDate.of(2015, Month.AUGUST, 31);
-        endDate = LocalDate.of(2015, Month.NOVEMBER, 30);
-        endDate = LocalDate.of(2016, Month.JUNE, 30);
+//        endDate = LocalDate.of(2018, Month.NOVEMBER, 1);
+//        endDate = LocalDate.of(2017, Month.NOVEMBER, 1);
+//        endDate = LocalDate.of(2016, Month.DECEMBER, 24);
+        endDates[0] = LocalDate.of(2015, Month.AUGUST, 31);
+        endDates[1] = LocalDate.of(2015, Month.NOVEMBER, 30);
+        endDates[2] = LocalDate.of(2016, Month.JUNE, 30);
 //        endDate = LocalDate.of(2016, Month.JUNE, 23);
 
         /**
-         * Get the terms
+         * Declare key variables.
          */
         Object[] allTerms = getAllTerms();
         TreeMap<Integer, ArrayList<String>> allterms = (TreeMap<Integer, ArrayList<String>>) allTerms[0];
@@ -127,11 +142,6 @@ public class Text_Processor2 {
         inputDir = new File(Files.getLexisNexisInputDataDir(),
                 dirname + "/LexisNexis");
         System.out.println(inputDir);
-        outDir = new File(Files.getLexisNexisOutputDataDir(),
-                dirname + "/LexisNexis" + startDate.toString() + "_" + endDate.toString());
-        if (!outDir.exists()) {
-            outDir.mkdirs();
-        }
 
         // Get GuardianAPIKey
         GuardianAPIKey = getGuardianAPIKey();
@@ -146,10 +156,6 @@ public class Text_Processor2 {
         int[] grandTotalArticleCountsForTerms;
         HashMap<String, TreeMap<DayOfWeek, Integer>> grandTotalArticleCountsForTermsOnDays;
         String term;
-        /**
-         * Process the data going through each input file. Currently the output
-         * is simply printed to std.out.
-         */
         String name;
         File outFile;
         PrintWriter pwCounts;
@@ -157,189 +163,203 @@ public class Text_Processor2 {
         File[] inputs0;
         File[] inputs1;
         inputs0 = inputDir.listFiles();
+
         /**
-         * Iterate through all the directories in inputDir. It is known that
-         * inputDir contains only directories and no files.
+         * Process the data for each start and end time period going through
+         * each input file.
          */
-        for (File input0 : inputs0) {
-
-            expressArticleCount = 0;
-            guardianArticleCount = 0;
-
-            name = input0.getName();
-            outFile = new File(outDir, name + "Counts.csv");
-            pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
-            if (writeHeadlines) {
-                outFile = new File(outDir,
-                        name + "HeadlinesForArticlesContaining_Syria.csv");
-                pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
-                pwHeadlines.println("Date, Section, Length, Title");
+        for (int dateIndex = 0; dateIndex < numberOfDateRanges; dateIndex++) {
+            outDir = new File(Files.getLexisNexisOutputDataDir(),
+                    dirname + "/LexisNexis" + startDates[dateIndex].toString() + "_" + endDates[dateIndex].toString());
+            if (!outDir.exists()) {
+                outDir.mkdirs();
             }
-            /**
-             * Print out the name of the directory/File.
-             */
-            //System.out.println(input0);
-            System.out.println("---------------------------");
-            System.out.println(name);
-            //pw.println(name);
-            System.out.println("---------------------------");
-            /**
-             * Iterate through all the files in the directory.
-             */
-            inputs1 = input0.listFiles();
 
             /**
-             * Initialise results.
+             * Iterate through all the directories in inputDir. It is known that
+             * inputDir contains only directories and no files.
              */
-            grandTotalTermCounts = new int[numberOfTerms];
-            grandTotalArticleCountsForTerms = new int[numberOfTerms];
-            grandTotalTermCountOnDays = new HashMap<>();
-            grandTotalArticleCountsForTermsOnDays = new HashMap<>();
-            int i = 0;
-            Iterator<Integer> ite;
-            ArrayList<String> terms;
-            Iterator<String> ite2;
-            ite = allterms.keySet().iterator();
-            while (ite.hasNext()) {
-                terms = allterms.get(ite.next());
-                ite2 = terms.iterator();
-                while (ite2.hasNext()) {
-                    term = ite2.next();
-                    grandTotalTermCounts[i] = 0;
-                    grandTotalArticleCountsForTerms[i] = 0;
-                    i++;
-                    grandTotalTermCountOnDays.put(term, new TreeMap<>());
-                    grandTotalArticleCountsForTermsOnDays.put(term, new TreeMap<>());
+            for (File input0 : inputs0) {
+
+                expressArticleCount = 0;
+                guardianArticleCount = 0;
+
+                name = input0.getName();
+                outFile = new File(outDir, name + "Counts.csv");
+                pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
+                if (writeHeadlines) {
+                    outFile = new File(outDir,
+                            name + "HeadlinesForArticlesContaining_Syria.csv");
+                    pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
+                    pwHeadlines.println("Date, Section, Length, Title");
                 }
-            }
-            /**
-             * Iterate through all the subdirectories in inputDir. It is known
-             * that each subdirectory contains a set of HTML files and
-             * associated directories. For the purposes of this processing, only
-             * the HTML files are processed.
-             */
-            int[] totalTermCounts;
-            int[] totalTermCountsInArticles;
-            Object[] results;
-            for (File input1 : inputs1) {
-                //System.out.println(input1);
                 /**
-                 * Filter to only process the HTML files.
+                 * Print out the name of the directory/File.
                  */
-                if (input1.getName().endsWith("htm") || input1.getName().endsWith("HTML")) {
+                //System.out.println(input0);
+                System.out.println("---------------------------");
+                System.out.println(name);
+                //pw.println(name);
+                System.out.println("---------------------------");
+                /**
+                 * Iterate through all the files in the directory.
+                 */
+                inputs1 = input0.listFiles();
+
+                /**
+                 * Initialise results.
+                 */
+                grandTotalTermCounts = new int[numberOfTerms];
+                grandTotalArticleCountsForTerms = new int[numberOfTerms];
+                grandTotalTermCountOnDays = new HashMap<>();
+                grandTotalArticleCountsForTermsOnDays = new HashMap<>();
+                int i = 0;
+                Iterator<Integer> ite;
+                ArrayList<String> terms;
+                Iterator<String> ite2;
+                ite = allterms.keySet().iterator();
+                while (ite.hasNext()) {
+                    terms = allterms.get(ite.next());
+                    ite2 = terms.iterator();
+                    while (ite2.hasNext()) {
+                        term = ite2.next();
+                        grandTotalTermCounts[i] = 0;
+                        grandTotalArticleCountsForTerms[i] = 0;
+                        i++;
+                        grandTotalTermCountOnDays.put(term, new TreeMap<>());
+                        grandTotalArticleCountsForTermsOnDays.put(term, new TreeMap<>());
+                    }
+                }
+                /**
+                 * Iterate through all the subdirectories in inputDir. It is
+                 * known that each subdirectory contains a set of HTML files and
+                 * associated directories. For the purposes of this processing,
+                 * only the HTML files are processed.
+                 */
+                int[] totalTermCounts;
+                int[] totalTermCountsInArticles;
+                Object[] results;
+                for (File input1 : inputs1) {
                     //System.out.println(input1);
                     /**
-                     * Parse the HTML file and obtain part of the result.
+                     * Filter to only process the HTML files.
                      */
-                    //if (input1.getParentFile().getName().startsWith("LexisNexis - The G")) {
-                    results = parseHTML(numberOfTerms, allterms, input1);
-                    /**
-                     * Combine the results from parsing this file to the overall
-                     * results.
-                     */
-                    // Process counts.
-                    totalTermCounts = (int[]) results[0];
-                    totalTermCountsInArticles = (int[]) results[1];
-                    i = 0;
-                    ite = allterms.keySet().iterator();
-                    while (ite.hasNext()) {
-                        terms = allterms.get(ite.next());
-                        ite2 = terms.iterator();
-                        while (ite2.hasNext()) {
-                            term = ite2.next();
-                            grandTotalTermCounts[i] += totalTermCounts[i];
-                            grandTotalArticleCountsForTerms[i] += totalTermCountsInArticles[i];
-                            i++;
-                            addToCount(
-                                    ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[2]).get(term),
-                                    grandTotalTermCountOnDays.get(term));
-                            addToCount(
-                                    ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[3]).get(term),
-                                    grandTotalArticleCountsForTermsOnDays.get(term));
+                    if (input1.getName().endsWith("htm") || input1.getName().endsWith("HTML")) {
+                        //System.out.println(input1);
+                        /**
+                         * Parse the HTML file and obtain part of the result.
+                         */
+                        //if (input1.getParentFile().getName().startsWith("LexisNexis - The G")) {
+                        results = parseHTML(numberOfTerms, startDates[dateIndex],
+                                endDates[dateIndex], allterms, input1);
+                        /**
+                         * Combine the results from parsing this file to the
+                         * overall results.
+                         */
+                        // Process counts.
+                        totalTermCounts = (int[]) results[0];
+                        totalTermCountsInArticles = (int[]) results[1];
+                        i = 0;
+                        ite = allterms.keySet().iterator();
+                        while (ite.hasNext()) {
+                            terms = allterms.get(ite.next());
+                            ite2 = terms.iterator();
+                            while (ite2.hasNext()) {
+                                term = ite2.next();
+                                grandTotalTermCounts[i] += totalTermCounts[i];
+                                grandTotalArticleCountsForTerms[i] += totalTermCountsInArticles[i];
+                                i++;
+                                addToCount(
+                                        ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[2]).get(term),
+                                        grandTotalTermCountOnDays.get(term));
+                                addToCount(
+                                        ((TreeMap<String, TreeMap<DayOfWeek, Integer>>) results[3]).get(term),
+                                        grandTotalArticleCountsForTermsOnDays.get(term));
+                            }
                         }
-                    }
-                    if (writeHeadlines) {
-                        // Process dates and headlines writing out a list.
-                        TreeSet<DateOutlineDetails> syriaDateHeadlines;
-                        syriaDateHeadlines = (TreeSet<DateOutlineDetails>) results[4];
-                        Iterator<DateOutlineDetails> ite3;
-                        DateOutlineDetails dh;
-                        ite3 = syriaDateHeadlines.iterator();
-                        while (ite3.hasNext()) {
-                            dh = ite3.next();
-                            String s;
-                            s = dh.LD + ",\"" + dh.Section + "\",\"" + dh.Length + "\",\"" + dh.Headline + "\"";
-                            System.out.println(s);
-                            pwHeadlines.println(s);
+                        if (writeHeadlines) {
+                            // Process dates and headlines writing out a list.
+                            TreeSet<DateOutlineDetails> syriaDateHeadlines;
+                            syriaDateHeadlines = (TreeSet<DateOutlineDetails>) results[4];
+                            Iterator<DateOutlineDetails> ite3;
+                            DateOutlineDetails dh;
+                            ite3 = syriaDateHeadlines.iterator();
+                            while (ite3.hasNext()) {
+                                dh = ite3.next();
+                                String s;
+                                s = dh.LD + ",\"" + dh.Section + "\",\"" + dh.Length + "\",\"" + dh.Headline + "\"";
+                                System.out.println(s);
+                                pwHeadlines.println(s);
+                            }
                         }
+                        //}
                     }
-                    //}
                 }
-            }
-            /**
-             * Write out summaries of counts.
-             */
-            /**
-             * Write header
-             */
-            String header;
-            header = "Term Type,Term,Total Term Count,Total Article Count";
-            TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDay;
-            TreeMap<DayOfWeek, Integer> grandTotalArticleCountsForTermsOnDay;
-            Iterator<DayOfWeek> ite3;
-            DayOfWeek day;
-            ite3 = mondayToSaturday.iterator();
-            while (ite3.hasNext()) {
-                day = ite3.next();
-                header += ",Term Count On " + day;
-            }
-            ite3 = mondayToSaturday.iterator();
-            while (ite3.hasNext()) {
-                day = ite3.next();
-                header += ",Article Count On " + day;
-            }
-            System.out.println(header);
-            pwCounts.println(header);
-            /**
-             * Write lines
-             */
-            i = 0;
-            ite = allterms.keySet().iterator();
-            while (ite.hasNext()) {
-                int typeInt = ite.next();
-                String termType = termTypes.get(typeInt);
-                terms = allterms.get(typeInt);
-                ite2 = terms.iterator();
-                while (ite2.hasNext()) {
-                    term = ite2.next();
-                    grandTotalTermCountOnDay = grandTotalTermCountOnDays.get(term);
-                    grandTotalArticleCountsForTermsOnDay = grandTotalArticleCountsForTermsOnDays.get(term);
+                /**
+                 * Write out summaries of counts.
+                 */
+                /**
+                 * Write header
+                 */
+                String header;
+                header = "Term Type,Term,Total Term Count,Total Article Count";
+                TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDay;
+                TreeMap<DayOfWeek, Integer> grandTotalArticleCountsForTermsOnDay;
+                Iterator<DayOfWeek> ite3;
+                DayOfWeek day;
+                ite3 = mondayToSaturday.iterator();
+                while (ite3.hasNext()) {
+                    day = ite3.next();
+                    header += ",Term Count On " + day;
+                }
+                ite3 = mondayToSaturday.iterator();
+                while (ite3.hasNext()) {
+                    day = ite3.next();
+                    header += ",Article Count On " + day;
+                }
+                System.out.println(header);
+                pwCounts.println(header);
+                /**
+                 * Write lines
+                 */
+                i = 0;
+                ite = allterms.keySet().iterator();
+                while (ite.hasNext()) {
+                    int typeInt = ite.next();
+                    String termType = termTypes.get(typeInt);
+                    terms = allterms.get(typeInt);
+                    ite2 = terms.iterator();
+                    while (ite2.hasNext()) {
+                        term = ite2.next();
+                        grandTotalTermCountOnDay = grandTotalTermCountOnDays.get(term);
+                        grandTotalArticleCountsForTermsOnDay = grandTotalArticleCountsForTermsOnDays.get(term);
 //                System.out.println(term + " term count " + grandTotalTermCounts[i]);
 //                pwCounts.println(term + " term count " + grandTotalTermCounts[i]);
 //                System.out.println(term + " Article count " + grandTotalArticleCountsForTerms[i]);
 //                pwCounts.println(term + " Article count " + grandTotalArticleCountsForTerms[i]);
-                    System.out.print(termType);
-                    pwCounts.print(termType);
-                    System.out.print("," + term);
-                    pwCounts.print("," + term);
-                    System.out.print("," + grandTotalTermCounts[i]);
-                    pwCounts.print("," + grandTotalTermCounts[i]);
-                    System.out.print("," + grandTotalArticleCountsForTerms[i]);
-                    pwCounts.print("," + grandTotalArticleCountsForTerms[i]);
-                    i++;
-                    printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalTermCountOnDays.get(term));
-                    printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalArticleCountsForTermsOnDays.get(term));
-                    System.out.println();
-                    pwCounts.println();
+                        System.out.print(termType);
+                        pwCounts.print(termType);
+                        System.out.print("," + term);
+                        pwCounts.print("," + term);
+                        System.out.print("," + grandTotalTermCounts[i]);
+                        pwCounts.print("," + grandTotalTermCounts[i]);
+                        System.out.print("," + grandTotalArticleCountsForTerms[i]);
+                        pwCounts.print("," + grandTotalArticleCountsForTerms[i]);
+                        i++;
+                        printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalTermCountOnDays.get(term));
+                        printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalArticleCountsForTermsOnDays.get(term));
+                        System.out.println();
+                        pwCounts.println();
+                    }
                 }
+                System.out.println("---------------------------");
+                pwCounts.close();
+                if (writeHeadlines) {
+                    pwHeadlines.close();
+                }
+                System.out.println("expressArticleCount " + expressArticleCount);
+                System.out.println("guardianArticleCount " + guardianArticleCount);
             }
-            System.out.println("---------------------------");
-            pwCounts.close();
-            if (writeHeadlines) {
-                pwHeadlines.close();
-            }
-            System.out.println("expressArticleCount " + expressArticleCount);
-            System.out.println("guardianArticleCount " + guardianArticleCount);
         }
     }
 
@@ -765,11 +785,13 @@ public class Text_Processor2 {
      * articles that mention "Syria" in them.
      *
      * @param n
+     * @param startDate
+     * @param endDate
      * @param allterms
      * @param input The input file to be parsed.
      * @return
      */
-    public Object[] parseHTML(int n,
+    public Object[] parseHTML(int n, LocalDate startDate, LocalDate endDate,
             TreeMap<Integer, ArrayList<String>> allterms, File input) {
         inArticle = false;
         gotDate = false;
@@ -1521,7 +1543,7 @@ public class Text_Processor2 {
         octterms.add("tent camp");
         index += octterms.size();
 
-        // Other Key terms
+        // Other Key Terms
         // Border Movement Terms
         termTypes.put(i, "Border Movement Terms");
         ArrayList bmterms = new ArrayList();
@@ -1558,6 +1580,17 @@ public class Text_Processor2 {
         msdterms.add("tide");
         msdterms.add("wave");
         index += msdterms.size();
+        // Bogus Asylum Related Terms 
+        termTypes.put(i, "Bogus Asylum Related Terms");
+        ArrayList barterms = new ArrayList();
+        allterms.put(i, barterms);
+        i++;
+        barterms.add("bogus");
+        barterms.add("bogus asylum seeker");
+        barterms.add("failed asylum seeker");
+        barterms.add("false asylum claim");
+        barterms.add("bogus asylum claim");
+        index += barterms.size();
         // Miscellaneous Key Terms
         termTypes.put(i, "Miscellaneous Key Terms");
         ArrayList mktterms = new ArrayList();
