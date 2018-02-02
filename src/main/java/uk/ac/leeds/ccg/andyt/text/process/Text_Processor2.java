@@ -317,12 +317,11 @@ public class Text_Processor2 {
                     /**
                      * Filter to only process the HTML files.
                      */
-                    if (input1.getName().endsWith("htm") || input1.getName().endsWith("HTML")) {
-                        //System.out.println(input1);
+                    if (input1.getName().endsWith("htm") 
+                            || input1.getName().endsWith("HTML")) {
                         /**
                          * Parse the HTML file and obtain part of the result.
                          */
-                        //if (input1.getParentFile().getName().startsWith("LexisNexis - The G")) {
                         results = parseHTML(numberOfTerms, startDates[dateIndex],
                                 endDates[dateIndex], allterms, input1);
                         /**
