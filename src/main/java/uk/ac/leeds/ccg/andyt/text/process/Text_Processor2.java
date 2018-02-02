@@ -43,13 +43,22 @@ import uk.ac.leeds.ccg.andyt.generic.lang.Generic_StaticString;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
- * This class has a main method and so can be run. It was developed originally
- * for processing a set of files downloaded from NexisLexis for an undergraduate
- * student dissertation project. The NexisLexis files are in HTML format and
- * comprise the text of sets of articles downloaded from
- * http://www.nexislexis.com from the Express and Guardian newspapers from the
- * 1st of April 2015 to the 10th of February 2016. The search criteria for the
- * articles included the terms"refugee"or"brexit"or both.
+ * This class was originally developed for processing a set of files downloaded
+ * from NexisLexis for two undergraduate geography student dissertation projects
+ * mainly undertaken in the 2017 to 2018 academic year at the University of
+ * Leeds. The NexisLexis input files processed were in HTML format and comprise
+ * the text of two sets of articles downloaded from http://www.nexislexis.com.
+ * One set of articles came from The Daily Express and The Guardian; and the
+ * other set included articles from The Daily Mail, The Mail on Sunday, The
+ * Daily Mirror, The Telegraph and The Guardian newspapers. The first set
+ * included articles with the terms ("refugee") or ("refugee" and "brexit"). The
+ * second set included articles with the terms ("refugee" or "asylum seeker").
+ * The program processes the data and has two main capabilities. 1) For a given
+ * search term, the titles and dates of the articles containing that search term
+ * can be written to a file. 2) For a list of terms, the program will return the
+ * counts of the number of these terms and the number of articles containing
+ * these terms in each set of newspapers. For each set of outputs a time period
+ * can be set to return results for a specific time period.
  */
 public class Text_Processor2 {
 
@@ -81,10 +90,42 @@ public class Text_Processor2 {
     int guardianArticleCount;
 
     /**
-     * If true then a file with headlines for articles containing the terms
-     * "syria" are written out to file.
+     * For counting the number of articles in the Daily Mail or Mail On Sunday
+     * data.
+     */
+    int dailyMailOrMailOnSundayArticleCount;
+
+    /**
+     * For counting the number of articles in the Daily Mirror data.
+     */
+    int dailyMirrorArticleCount;
+
+    /**
+     * For counting the number of articles in the Daily Telegraph data.
+     */
+    int telegraphArticleCount;
+
+    /**
+     * If true then a file with headlines for articles containing the term
+     * headlineTerm are written out to file.
      */
     boolean writeHeadlines;
+
+    /**
+     * For storing a term for which headlines of articles containing the term
+     * are written out.
+     */
+    String headlineTerm;
+
+    /**
+     * If true then this is a run for Felicity otherwise it is a run for Emma.
+     */
+    boolean runForFelicity;
+
+    /**
+     * For storing names of newspapers to be processed
+     */
+    ArrayList<String> papers;
 
     /**
      * This is the main processing method.
@@ -93,37 +134,64 @@ public class Text_Processor2 {
 
         /**
          * Set writeHeadlines to be true to write out the titles of articles for
-         * those articles containing the term "syria".
+         * those articles containing the term headlineTerm.
          */
         //writeHeadlines = true;
         writeHeadlines = false;
+        headlineTerm = "Syria"; // Set this to another term if wanted.
+
+        /**
+         * Set which run to do.
+         */
+        runForFelicity = true;
+        runForFelicity = false; // run for Emma
 
         /**
          * Set start and end dates
          */
-        int numberOfDateRanges = 3;
-        LocalDate[] startDates = new LocalDate[numberOfDateRanges];
-        LocalDate[] endDates = new LocalDate[numberOfDateRanges];
-//        startDate = LocalDate.of(2013, Month.JANUARY, 1);
-//        startDate = LocalDate.of(2015, Month.AUGUST, 29);
-        startDates[0] = LocalDate.of(2015, Month.JUNE, 1);
-        startDates[1] = LocalDate.of(2015, Month.SEPTEMBER, 1);
-        startDates[2] = LocalDate.of(2016, Month.APRIL, 1);
-//        startDate  = LocalDate.of(2016, Month.MARCH, 23);
-//        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
-//        startDate  = LocalDate.of(2013, Month.JANUARY, 1);
-//        endDate = LocalDate.of(2018, Month.NOVEMBER, 1);
-//        endDate = LocalDate.of(2017, Month.NOVEMBER, 1);
-//        endDate = LocalDate.of(2016, Month.DECEMBER, 24);
-        endDates[0] = LocalDate.of(2015, Month.AUGUST, 31);
-        endDates[1] = LocalDate.of(2015, Month.NOVEMBER, 30);
-        endDates[2] = LocalDate.of(2016, Month.JUNE, 30);
-//        endDate = LocalDate.of(2016, Month.JUNE, 23);
+        LocalDate[] startDates;
+        LocalDate[] endDates;
+        int numberOfDateRanges;
+        if (runForFelicity) {
+            numberOfDateRanges = 4;
+            startDates = new LocalDate[numberOfDateRanges];
+            endDates = new LocalDate[numberOfDateRanges];
+            startDates[0] = LocalDate.of(2013, Month.JANUARY, 1);
+            startDates[1] = LocalDate.of(2015, Month.JUNE, 1);
+            startDates[2] = LocalDate.of(2015, Month.SEPTEMBER, 1);
+            startDates[3] = LocalDate.of(2016, Month.APRIL, 1);
+            endDates[0] = LocalDate.of(2017, Month.DECEMBER, 31);
+            endDates[1] = LocalDate.of(2015, Month.AUGUST, 31);
+            endDates[2] = LocalDate.of(2015, Month.NOVEMBER, 30);
+            endDates[3] = LocalDate.of(2016, Month.JUNE, 30);
+        } else {
+            numberOfDateRanges = 1;
+            startDates = new LocalDate[numberOfDateRanges];
+            endDates = new LocalDate[numberOfDateRanges];
+            startDates[0] = LocalDate.of(2015, Month.JUNE, 1);
+            endDates[0] = LocalDate.of(2018, Month.AUGUST, 31);
+        }
 
         /**
-         * Declare key variables.
+         * Initialise papers
          */
-        Object[] allTerms = getAllTerms();
+        papers = new ArrayList<>();
+        if (runForFelicity) {
+            papers.add("The Express");
+            papers.add("The Guardian");
+        } else {
+            papers.add("The Guardian");
+            papers.add("DAILY MAIL (London)");
+            papers.add("MAIL ON SUNDAY (London)");
+            papers.add("Daily Mirror");
+            papers.add("The Daily Telegraph (London)");
+        }
+        
+        /**
+         * Get terms and declare key variables.
+         */
+        //Object[] allTerms = getAllTermsFelicity();
+        Object[] allTerms = getAllTermsEmma();
         TreeMap<Integer, ArrayList<String>> allterms = (TreeMap<Integer, ArrayList<String>>) allTerms[0];
         HashMap<Integer, String> termTypes = (HashMap<Integer, String>) allTerms[1];
         int numberOfTerms = (Integer) allTerms[2];
@@ -135,7 +203,8 @@ public class Text_Processor2 {
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
         String dirname;
-        dirname = "LexisNexis-20171127T155442Z-001";
+        dirname = "Emma";
+//        dirname = "LexisNexis-20171127T155442Z-001";
 //        dirname ="LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outDir;
@@ -170,7 +239,8 @@ public class Text_Processor2 {
          */
         for (int dateIndex = 0; dateIndex < numberOfDateRanges; dateIndex++) {
             outDir = new File(Files.getLexisNexisOutputDataDir(),
-                    dirname + "/LexisNexis" + startDates[dateIndex].toString() + "_" + endDates[dateIndex].toString());
+                    dirname + "/LexisNexis" + startDates[dateIndex].toString()
+                            + "_" + endDates[dateIndex].toString());
             if (!outDir.exists()) {
                 outDir.mkdirs();
             }
@@ -183,13 +253,16 @@ public class Text_Processor2 {
 
                 expressArticleCount = 0;
                 guardianArticleCount = 0;
+                dailyMailOrMailOnSundayArticleCount = 0;
+                dailyMirrorArticleCount = 0;
+                telegraphArticleCount = 0;
 
                 name = input0.getName();
                 outFile = new File(outDir, name + "Counts.csv");
                 pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
                 if (writeHeadlines) {
                     outFile = new File(outDir,
-                            name + "HeadlinesForArticlesContaining_Syria.csv");
+                            name + "HeadlinesForArticlesContaining_" + headlineTerm + ".csv");
                     pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
                     pwHeadlines.println("Date, Section, Length, Title");
                 }
@@ -279,11 +352,11 @@ public class Text_Processor2 {
                         }
                         if (writeHeadlines) {
                             // Process dates and headlines writing out a list.
-                            TreeSet<DateOutlineDetails> syriaDateHeadlines;
-                            syriaDateHeadlines = (TreeSet<DateOutlineDetails>) results[4];
+                            TreeSet<DateOutlineDetails> headlineTermDateHeadlines;
+                            headlineTermDateHeadlines = (TreeSet<DateOutlineDetails>) results[4];
                             Iterator<DateOutlineDetails> ite3;
                             DateOutlineDetails dh;
-                            ite3 = syriaDateHeadlines.iterator();
+                            ite3 = headlineTermDateHeadlines.iterator();
                             while (ite3.hasNext()) {
                                 dh = ite3.next();
                                 String s;
@@ -359,6 +432,9 @@ public class Text_Processor2 {
                 }
                 System.out.println("expressArticleCount " + expressArticleCount);
                 System.out.println("guardianArticleCount " + guardianArticleCount);
+                System.out.println("dailyMailOrMailOnSundayArticleCount " + dailyMailOrMailOnSundayArticleCount);
+                System.out.println("dailyMirrorArticleCount " + dailyMirrorArticleCount);
+                System.out.println("telegraphArticleCount " + telegraphArticleCount);
             }
         }
     }
@@ -399,6 +475,10 @@ public class Text_Processor2 {
 
     boolean inArticle;
     boolean isExpressArticle;
+    boolean isDailyMailOrMailOnSundayArticle;
+    boolean isDailyMirrorArticle;
+    boolean isGuardianArticle;
+    boolean isTelegraphArticle;
 
     /**
      * Iteratively parse through nodes.
@@ -426,8 +506,14 @@ public class Text_Processor2 {
             value = nodeAttribute.getValue();
             //System.out.println("key"+ key);
             //System.out.println("value"+ value);
-            if (value.equalsIgnoreCase("The Express") || value.equalsIgnoreCase("The Guardian")) {
-                isExpressArticle = !value.equalsIgnoreCase("The Guardian");
+            if (papers.contains(value)) {
+                //System.out.println(value);
+                isExpressArticle = value.equalsIgnoreCase("The Express");
+                isDailyMailOrMailOnSundayArticle = value.equalsIgnoreCase("DAILY MAIL (London)")
+                        || value.equalsIgnoreCase("MAIL ON SUNDAY (London)");
+                isDailyMirrorArticle = value.equalsIgnoreCase("Daily Mirror");
+                isGuardianArticle = value.equalsIgnoreCase("The Guardian");
+                isTelegraphArticle = value.equalsIgnoreCase("The Daily Telegraph (London)");
                 return true;
                 //parseExpressNode(node);
             }
@@ -467,12 +553,12 @@ public class Text_Processor2 {
             if (key.equalsIgnoreCase("#text")) {
                 if (!value.equalsIgnoreCase("\n")) {
                     Date += value;
-                    if (isExpressArticle) {
-                        if (value.endsWith("day")) {
+                    if (isGuardianArticle) {
+                        if (value.endsWith("GMT")) {
                             return true;
                         }
                     } else {
-                        if (value.endsWith("GMT")) {
+                        if (value.endsWith("day")) {
                             return true;
                         }
                     }
@@ -782,7 +868,7 @@ public class Text_Processor2 {
      * is TreeMap with keys that are the DayOfWeek and values that are counts of
      * the number of articles each term appears in those days. result[4] is a
      * TreeSet of DateHeadlines which provides the dates and headlines of those
-     * articles that mention "Syria" in them.
+     * articles that mention headlineTerm in them.
      *
      * @param n
      * @param startDate
@@ -797,8 +883,8 @@ public class Text_Processor2 {
         gotDate = false;
         gotTitle = false;
         Object[] result = new Object[5];
-        TreeSet<DateOutlineDetails> syriaDateHeadlines;
-        syriaDateHeadlines = new TreeSet<>();
+        TreeSet<DateOutlineDetails> headlineTermDateHeadlines;
+        headlineTermDateHeadlines = new TreeSet<>();
 //        BufferedReader br;
 //        br = Generic_StaticIO.getBufferedReader(input);
 
@@ -816,7 +902,8 @@ public class Text_Processor2 {
         result[0] = totalTermCounts;
         int[] totalArticleCountsForTerms = new int[n];
         result[1] = totalArticleCountsForTerms;
-        int[] termCounts = new int[n];
+        HashMap<String, Integer> termCounts = new HashMap<>();
+        //int[] termCounts = new int[n];
         //int[] articleCountsForTerms = new int[n];
         TreeMap<String, TreeMap<DayOfWeek, Integer>> totalTermCountByDay;
         totalTermCountByDay = new TreeMap<>();
@@ -835,7 +922,8 @@ public class Text_Processor2 {
                 term = ite2.next();
                 totalTermCounts[i] = 0;
                 totalArticleCountsForTerms[i] = 0;
-                termCounts[i] = 0;
+                termCounts.put(term, 0);
+                //termCounts[i] = 0;
                 //articleCountsForTerms[i] = 0;
                 i++;
                 totalTermCountByDay.put(term, new TreeMap<>());
@@ -903,7 +991,11 @@ public class Text_Processor2 {
                                     Article = " "; // The space could be important.
                                 }
                             } else {
-                                gotSection = getSection(node);
+                                if (isDailyMailOrMailOnSundayArticle) {
+                                    gotSection = true;
+                                } else {
+                                    gotSection = getSection(node);
+                                }
                                 Length = "";
                             }
                         } else {
@@ -931,8 +1023,14 @@ public class Text_Processor2 {
                 if (ld.isAfter(startDate) && ld.isBefore(endDate)) {
                     if (isExpressArticle) {
                         expressArticleCount++;
-                    } else {
+                    } else if (isGuardianArticle) {
                         guardianArticleCount++;
+                    } else if (isDailyMailOrMailOnSundayArticle) {
+                        dailyMailOrMailOnSundayArticleCount++;
+                    } else if (isDailyMirrorArticle) {
+                        dailyMirrorArticleCount++;
+                    } else if (isTelegraphArticle) {
+                        telegraphArticleCount++;
                     }
                     //System.out.println("Title" + Title);
                     //System.out.println("Section" + Section);
@@ -946,21 +1044,23 @@ public class Text_Processor2 {
                         ite2 = terms.iterator();
                         while (ite2.hasNext()) {
                             term = ite2.next();
-                            termCounts[i] += getTermCount(term, Article);
-                            if (termCounts[i] > 0) {
-                                totalTermCounts[i] += termCounts[i];
+                            int c0 = termCounts.get(term);
+                            int c1 = getTermCount(term, Article);
+                            termCounts.put(term, c0 + c1);
+                            if (c1 > 0) {
+                                totalTermCounts[i] += c1;
                                 totalArticleCountsForTerms[i]++;
                                 addToCount(totalArticleCountForTermsByDay.get(term), day, 1);
                             }
-                            addToCount(totalTermCountByDay.get(term), day, termCounts[i]);
+                            addToCount(totalTermCountByDay.get(term), day, c1);
                             i++;
                         }
                     }
                     /**
                      * Store DateHeadline's for those articles on Saturdays that
-                     * contain the term "syria".
+                     * contain the term headlineTerm.
                      */
-                    if (termCounts[0] > 0) {
+                    if (termCounts.get(headlineTerm) > 0) {
                         if (ld.getDayOfWeek().equals(DayOfWeek.SATURDAY)) {
 //                        // Fire off to Guardian Open Data to try to get page number...
 //                        // This is now done in agdt-web in uk.ac.leeds.ccg.andyt.web.guardian.GuardianGetPage
@@ -981,14 +1081,25 @@ public class Text_Processor2 {
 //                                    + "newspaperEditionDate&q="
 //                                    + title +"&api-key="+ GuardianAPIKey;
 //                        }
-                            syriaDateHeadlines.add(new DateOutlineDetails(ld,
+                            headlineTermDateHeadlines.add(new DateOutlineDetails(ld,
                                     Section, Length, Title));
                         }
                     }
                 }
-                for (i = 0; i < n; i++) {
-                    termCounts[i] = 0;
+                Iterator<Integer> iteC;
+                iteC = allterms.keySet().iterator();
+                Iterator<String> ite3;
+                while (iteC.hasNext()) {
+                    terms = allterms.get(iteC.next());
+                    ite3 = terms.iterator();
+                    while (ite3.hasNext()) {
+                        term = ite3.next();
+                        termCounts.put(term, 0);
+                    }
                 }
+//                for (i = 0; i < n; i++) {
+//                    termCounts[i] = 0;
+//                }
                 inArticle = false;
                 gotDate = false;
                 startTitle = false;
@@ -1003,7 +1114,7 @@ public class Text_Processor2 {
         }
         result[2] = totalTermCountByDay;
         result[3] = totalArticleCountForTermsByDay;
-        result[4] = syriaDateHeadlines;
+        result[4] = headlineTermDateHeadlines;
         return result;
     }
 
@@ -1223,7 +1334,7 @@ public class Text_Processor2 {
      * @TODO: This could all be read in from a file rather than being hard coded
      * here.
      */
-    Object[] getAllTerms() {
+    Object[] getAllTermsFelicity() {
         Object[] result;
         result = new Object[3];
         TreeMap<Integer, ArrayList<String>> allterms = new TreeMap<>();
@@ -1274,7 +1385,7 @@ public class Text_Processor2 {
         ptterms.add("innocent");
         ptterms.add("intruder");
         ptterms.add("iraqi");
-        ptterms.add("kurd");
+        ptterms.add("kurd  OR kurdish");
         ptterms.add("lebanese");
         ptterms.add("migrant");
         ptterms.add("muslim");
@@ -1389,7 +1500,6 @@ public class Text_Processor2 {
         index++;
         cterms.add("Syria ");
         index++;
-        int syriaIndex = index;
         cterms.add("Turkey");
         index++;
         cterms.add("West Bank");
@@ -1641,6 +1751,461 @@ public class Text_Processor2 {
         mktterms.add("work");
         mktterms.add("war");
         index += mktterms.size();
+        // Headline terms
+        if (writeHeadlines) {
+            termTypes.put(i, "Miscellaneous Key Terms");
+            ArrayList hterms = new ArrayList();
+            allterms.put(i, hterms);
+            i++;
+            hterms.add(headlineTerm);
+            index += hterms.size();
+        }
+        int numberOfTerms = index + 1;
+        result[2] = numberOfTerms;
+        return result;
+    }
+
+    /**
+     * Initialise terms. There are capitalisations and space that are important
+     * in these terms. There are also terms separated by " OR ". For those terms
+     * the article counts will just measure the the number of articles in the
+     * selections where either term appears and will sum up the number of times
+     * the terms appear in the articles.
+     *
+     * @TODO: This could all be read in from a file rather than being hard coded
+     * here.
+     */
+    Object[] getAllTermsEmma() {
+        Object[] result;
+        result = new Object[3];
+        TreeMap<Integer, ArrayList<String>> allterms = new TreeMap<>();
+        result[0] = allterms;
+        HashMap<Integer, String> termTypes = new HashMap<>();
+        result[1] = termTypes;
+        int i = 0;
+        int index = -1;
+        // Key Migrant/Refugee Terms
+        termTypes.put(i, "Key Migrant/Refugee Terms");
+        ArrayList mrterms = new ArrayList();
+        allterms.put(i, mrterms);
+        i++;
+        mrterms.add("asylum seeker");
+        mrterms.add("economic migrant");
+        mrterms.add("humanitarian crisis");
+        mrterms.add("illegal immigrant");
+        mrterms.add("illegal migrant");
+        mrterms.add("immigration crisis");
+        mrterms.add("migrant crisis");
+        mrterms.add("migrant flood OR flood of migrants");
+        mrterms.add("refugee crisis");
+        mrterms.add("refugee camp");
+        index += mrterms.size();
+        // People Terms
+        // Types of People Terms
+        /**
+         * WARNING: Although many of these terms are people from a country,
+         * these terms are the same as those for other things belonging to the
+         * place e.g. a Russian is a person from Russia and a Russian tank is a
+         * tank from Russia.
+         */
+        termTypes.put(i, "Types of People");
+        ArrayList ptterms = new ArrayList();
+        allterms.put(i, ptterms);
+        i++;
+        ptterms.add("afghan");
+        ptterms.add("alien");
+        ptterms.add("british");
+        ptterms.add("christian");
+        ptterms.add("civilian");
+        ptterms.add("english");
+        ptterms.add("fellow human");
+        ptterms.add("foreigner");
+        ptterms.add("french");
+        ptterms.add("greek");
+        ptterms.add("human");
+        ptterms.add("innocent");
+        ptterms.add("intruder");
+        ptterms.add("iraqi");
+        ptterms.add("kurd  OR kurdish");
+        ptterms.add("lebanese");
+        ptterms.add("migrant");
+        ptterms.add("muslim");
+        ptterms.add("people trafficker OR human trafficker");
+        ptterms.add("rabid dog");
+        ptterms.add("refugee");
+        ptterms.add("smuggler OR smuggling");
+        ptterms.add("stow away");
+        ptterms.add("syrian");
+        ptterms.add("terrorist");
+        ptterms.add("yemeni");
+        index += ptterms.size();
+        // Individuals
+        termTypes.put(i, "Individuals");
+        ArrayList iterms = new ArrayList();
+        allterms.put(i, iterms);
+        i++;
+        iterms.add("Alan Kurdi OR Aylan Kurdi"); // 3 year old boy washed up on beach (https://en.wikipedia.org/wiki/Death_of_Alan_Kurdi)
+        iterms.add("Assad"); // Leader of Syria
+        iterms.add("David Cameron OR Teresa May"); // UK Prime Ministers
+        iterms.add("Erdoğan OR Erdogan"); // Leader of Turkey
+        iterms.add("Gutteres OR Grandi"); // Head of UNHCR
+        iterms.add("Hammond OR Johnson OR foreign secretary"); // UK foreign secretaries
+        iterms.add("Hollande"); // France Prime Minister
+        iterms.add("Juncker"); // Head of EC
+        iterms.add("Ki-Moon OR Ki Moon OR Annan"); // Head of UN
+        iterms.add("Merkel"); // Germany Prime Minister
+        iterms.add("Sturgeon"); // Leader of The SNP
+        iterms.add("Nigel Farage"); // Leader of UKIP
+        iterms.add("Putin"); // Russian president
+        iterms.add("Steven Woolfe"); // UKIP Migration Spokesman and UK MEP
+        index += iterms.size();
+        // Organisations
+        // Political
+        termTypes.put(i, "Polictical Organisations");
+        ArrayList poterms = new ArrayList();
+        allterms.put(i, poterms);
+        i++;
+        poterms.add("EU Turkey Deal OR EU-Turkey Deal OR EU-Turkey deal OR deal between the EU and Turkey");
+        poterms.add("EDL");
+        poterms.add("far right");
+        poterms.add("IS OR islamic state OR Islamic State");
+        poterms.add("ISIL");
+        poterms.add("ISIS");
+        poterms.add("nazi");
+        poterms.add("right wing");
+        poterms.add("UKIP");
+        index += poterms.size();
+//        // Relief Agencies
+//        termTypes.put(i, "Relief Agencies");
+//        ArrayList raterms = new ArrayList();
+//        allterms.put(i, raterms);
+//        i++;
+//        raterms.add("Amnesty International");
+//        raterms.add("Oxfam");
+//        raterms.add("UN");
+//        raterms.add("UNICEF");
+//        raterms.add("UNHCR");
+//        raterms.add("UNRWA");
+//        raterms.add("MSF");
+//        raterms.add("Red Cross");
+//        index += raterms.size();
+//        // Places
+//        // Large Regions
+//        termTypes.put(i, "Large Regions");
+//        ArrayList lrterms = new ArrayList();
+//        allterms.put(i, lrterms);
+//        i++;
+//        lrterms.add("Africa");
+//        lrterms.add("Asia");
+//        lrterms.add("EU");
+//        lrterms.add("Europe");
+//        lrterms.add("Mediterranean");
+//        index += lrterms.size();
+//        // Countries
+//        termTypes.put(i, "Countries");
+//        ArrayList cterms = new ArrayList();
+//        allterms.put(i, cterms);
+//        i++;
+//        cterms.add("Afghanistan");
+//        index++;
+//        /**
+//         * As with Egypt, some spaces are added here on purpose so as to not
+//         * count longer terms that start in the same way e.g. Egypt and
+//         * Egyptian.
+//         */
+//        cterms.add("Egypt ");
+//        index++;
+//        cterms.add("England OR Britain OR UK");
+//        index++;
+//        cterms.add("France");
+//        index++;
+//        cterms.add("Germany");
+//        index++;
+//        cterms.add("Greece");
+//        index++;
+//        cterms.add("Iraq ");
+//        index++;
+//        cterms.add("Israel ");
+//        index++;
+//        cterms.add("Italy");
+//        index++;
+//        cterms.add("Jordan ");
+//        index++;
+//        cterms.add("Lebanon");
+//        index++;
+//        cterms.add("Macedonia ");
+//        index++;
+//        cterms.add("Russia ");
+//        index++;
+//        cterms.add("Spain");
+//        index++;
+//        cterms.add("Syria ");
+//        index++;
+//        int syriaIndex = index;
+//        cterms.add("Turkey");
+//        index++;
+//        cterms.add("West Bank");
+//        index++;
+//        cterms.add("Yemen ");
+//        index++;
+//        // Regions in Countries
+//        termTypes.put(i, "Regions in Countries");
+//        ArrayList ricterms = new ArrayList();
+//        allterms.put(i, ricterms);
+//        i++;
+//        ricterms.add("Bodrum"); // Region of Turkey
+//        ricterms.add("Lesbos"); // Greek island
+//        index += ricterms.size();
+//        // Syrian Cities
+//        termTypes.put(i, "Syrian Cities");
+//        ArrayList scterms = new ArrayList();
+//        allterms.put(i, scterms);
+//        i++;
+//        scterms.add("Aleppo");
+//        scterms.add("Damascus");
+//        scterms.add("Homs");
+//        scterms.add("Raqqa");
+//        index += scterms.size();
+//        // Syrian Refugee Camps (see https://en.wikipedia.org/wiki/Syrian_refugee_camps)
+//        // Refugee Camps in Turkey
+//        termTypes.put(i, "Refugee Camps in Turkey");
+//        ArrayList rcitterms = new ArrayList();
+//        allterms.put(i, rcitterms);
+//        i++;
+//        rcitterms.add("Altınözü OR Altinozu");
+//        rcitterms.add("Yayladağı OR Yayladagi");
+//        rcitterms.add("apaydın");
+//        rcitterms.add("Güveççi OR Guvecci");
+//        rcitterms.add("Ceylanpınar");
+//        rcitterms.add("Akçakale OR Akcakale");
+//        rcitterms.add("Harran");
+//        rcitterms.add("Viranşehir OR Viransehir");
+//        rcitterms.add("Suruç OR Suruc");
+//        rcitterms.add("Islahiye");
+//        rcitterms.add("Karkamış OR Karkamis");
+//        rcitterms.add("Nizip");
+//        rcitterms.add("Öncüpınar OR Oncupinar");
+//        rcitterms.add("Elbeyli Besiriye");
+//        rcitterms.add("Merkez");
+//        rcitterms.add("Cevdetiye");
+//        rcitterms.add("Sarıçam OR Saricam");
+//        rcitterms.add("Midyat");
+//        rcitterms.add("Beydağı or Beydagi");
+//        index += rcitterms.size();
+//        // Refugee Camps in Jordan
+//        termTypes.put(i, "Refugee Camps in Jordan");
+//        ArrayList rcijterms = new ArrayList();
+//        allterms.put(i, rcijterms);
+//        i++;
+//        rcijterms.add("Zaatari");
+//        rcijterms.add("Azraq");
+//        rcijterms.add("Mrajeeb Al Fhood");
+//        rcijterms.add("Rukban");
+//        rcijterms.add("Hadalat");
+//        index += rcijterms.size();
+//        // Refugee Camps in Iraq
+//        termTypes.put(i, "Refugee Camps in Iraq");
+//        ArrayList rciiterms = new ArrayList();
+//        allterms.put(i, rciiterms);
+//        i++;
+//        rciiterms.add("Domiz");
+//        rciiterms.add("Gawilan");
+//        rciiterms.add("Akre");
+//        rciiterms.add("Darashakran");
+//        rciiterms.add("Kawergosk");
+//        rciiterms.add("Qushtapa");
+//        rciiterms.add("Basirma");
+//        rciiterms.add("Arbat");
+//        rciiterms.add("Al-Obaidi OR Al Obaidi OR Alobaidi");
+//        index += rciiterms.size();
+//        // Refugee Camps in Macedonia
+//        termTypes.put(i, "Refugee Camps in Macedonia");
+//        ArrayList rcimterms = new ArrayList();
+//        allterms.put(i, rcimterms);
+//        i++;
+//        rcimterms.add("Gevgelija");
+//        rcimterms.add("Tabanovce");
+//        index += rcimterms.size();
+//        // Refugee Camps in Greece
+//        termTypes.put(i, "Refugee Camps in Greece");
+//        ArrayList rcigterms = new ArrayList();
+//        allterms.put(i, rcigterms);
+//        i++;
+//        rcigterms.add("Doliana");
+//        rcigterms.add("Katsika");
+//        rcigterms.add("Konitsa");
+//        rcigterms.add("Filippada");
+//        rcigterms.add("Tselepevo");
+//        rcigterms.add("Alexandreia");
+//        rcigterms.add("Cherso");
+//        rcigterms.add("Derveni Alexill");
+//        rcigterms.add("Eko");
+//        rcigterms.add("Diavata");
+//        rcigterms.add("Giannitsa");
+//        rcigterms.add("Idomeni");
+//        rcigterms.add("Kalochori OR Iliadi");
+//        rcigterms.add("Lagadika");
+//        rcigterms.add("Nea Kavala");
+//        rcigterms.add("Oraiokastro");
+//        rcigterms.add("Piera");
+//        rcigterms.add("Sinatex");
+//        rcigterms.add("Sindos");
+//        rcigterms.add("Softex");
+//        rcigterms.add("Thessaloniki");
+//        rcigterms.add("Vasilika");
+//        rcigterms.add("Veria");
+//        rcigterms.add("Viagiohori");
+//        rcigterms.add("Chalkero");
+//        rcigterms.add("Drama");
+//        rcigterms.add("Andravidas");
+//        rcigterms.add("Oiuofyta");
+//        rcigterms.add("Ritsona");
+//        rcigterms.add("Thermopiles");
+//        rcigterms.add("Kipselochori");
+//        rcigterms.add("Larissa");
+//        rcigterms.add("Volos");
+//        rcigterms.add("Agios Andreas");
+//        rcigterms.add("Elefsina");
+//        rcigterms.add("Eleonas");
+//        rcigterms.add("Elliniko");
+//        rcigterms.add("Lavrio");
+//        rcigterms.add("Malakasa");
+//        rcigterms.add("Piraeus");
+//        rcigterms.add("Schisto");
+//        rcigterms.add("Skaramagas");
+//        rcigterms.add("Victoria Square");
+//        rcigterms.add("Moria");
+//        rcigterms.add("Chios");
+//        rcigterms.add("Vial");
+//        rcigterms.add("Vathy");
+//        rcigterms.add("Leros");
+//        rcigterms.add("Lepida");
+//        rcigterms.add("Kos");
+//        rcigterms.add("Rhodes");
+//        index += rcigterms.size();
+        // Other Camp Terms
+        termTypes.put(i, "Other Camp Terms");
+        ArrayList octterms = new ArrayList();
+        allterms.put(i, octterms);
+        i++;
+        octterms.add("calais");
+        octterms.add("camp");
+        octterms.add("container camp");
+        octterms.add("jungle OR Jules Ferry"); // https://en.wikipedia.org/wiki/Calais_Jungle https://en.wikipedia.org/wiki/Migrants_around_Calais
+        octterms.add("tent camp");
+        index += octterms.size();
+
+        // Other Key Terms
+        // Border Movement Terms
+        termTypes.put(i, "Border Movement Terms");
+        ArrayList bmterms = new ArrayList();
+        allterms.put(i, bmterms);
+        i++;
+        bmterms.add("across the border OR over the border");
+        bmterms.add("border");
+        bmterms.add("crossing");
+        bmterms.add("boat");
+        bmterms.add("displacement");
+        bmterms.add("exodus");
+        bmterms.add("fence OR wall");
+        bmterms.add("flee");
+        bmterms.add("lorry OR lorries");
+        bmterms.add("movement");
+        index += bmterms.size();
+        // Movement Scale Descriptors
+        termTypes.put(i, "Movement Scale Descriptors");
+        ArrayList msdterms = new ArrayList();
+        allterms.put(i, msdterms);
+        i++;
+        msdterms.add("dam has burst");
+        msdterms.add("flee");
+        msdterms.add("flood");
+        msdterms.add("flow");
+        msdterms.add("influx");
+        msdterms.add("swarm");
+        msdterms.add("torrent");
+        msdterms.add("engulf");
+        msdterms.add("storm");
+        msdterms.add("surge");
+        msdterms.add("swell");
+        msdterms.add("swamp");
+        msdterms.add("tide");
+        msdterms.add("wave");
+        index += msdterms.size();
+        // Bogus Asylum Related Terms 
+        termTypes.put(i, "Bogus Asylum Related Terms");
+        ArrayList barterms = new ArrayList();
+        allterms.put(i, barterms);
+        i++;
+        barterms.add("bogus");
+        barterms.add("bogus asylum seeker");
+        barterms.add("failed asylum seeker");
+        barterms.add("false asylum claim");
+        barterms.add("bogus asylum claim");
+        index += barterms.size();
+        // Miscellaneous Key Terms
+        termTypes.put(i, "Miscellaneous Key Terms");
+        ArrayList mktterms = new ArrayList();
+        allterms.put(i, mktterms);
+        i++;
+        mktterms.add("aid");
+        mktterms.add("asylum");
+        mktterms.add("attack");
+        mktterms.add("brexit");
+        mktterms.add("British culture");
+        mktterms.add("burden");
+        mktterms.add("child OR children");
+        mktterms.add("chaos");
+        mktterms.add("community");
+        mktterms.add("crime");
+        mktterms.add("crisis");
+        mktterms.add("deal");
+        mktterms.add("desperate OR desparation");
+        mktterms.add("drown OR drowning");
+        mktterms.add("dying OR dies OR death");
+        mktterms.add("disease");
+        mktterms.add("extremism");
+        mktterms.add("economic");
+        mktterms.add("famine");
+        mktterms.add("foreign");
+        mktterms.add("genocide");
+        mktterms.add("housing");
+        mktterms.add("hate crime");
+        mktterms.add("hunger OR malnutrition OR malnourished OR starving");
+        mktterms.add("illegal");
+        mktterms.add("immigration");
+        mktterms.add("imperialism");
+        mktterms.add("islam ");
+        mktterms.add("islamophobia");
+        mktterms.add("mop OR stem the flow");
+        mktterms.add("moral");
+        mktterms.add("moral imperialism");
+        mktterms.add("NHS");
+        mktterms.add("open borders OR open border policy");
+        mktterms.add("nationalism OR nation");
+        mktterms.add("plight");
+        mktterms.add("relief");
+        mktterms.add("resettlement");
+        mktterms.add("security");
+        mktterms.add("subside");
+        mktterms.add("threat");
+        mktterms.add("threat to security");
+        mktterms.add("terror ");
+        mktterms.add("terrorism");
+        mktterms.add("tragedy OR tragic");
+        mktterms.add("trafficking");
+        mktterms.add("work");
+        mktterms.add("war");
+        index += mktterms.size();
+        // Headline terms
+        if (writeHeadlines) {
+            termTypes.put(i, "Miscellaneous Key Terms");
+            ArrayList hterms = new ArrayList();
+            allterms.put(i, hterms);
+            i++;
+            hterms.add(headlineTerm);
+            index += hterms.size();
+        }
         int numberOfTerms = index + 1;
         result[2] = numberOfTerms;
         return result;
