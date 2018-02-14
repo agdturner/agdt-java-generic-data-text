@@ -80,30 +80,29 @@ public class Text_Processor2 {
     String GuardianAPIKey;
 
     /**
-     * For counting the number of articles in the Express data.
+     * For storing names of newspapers to be processed
      */
-    int expressArticleCount;
+    ArrayList<String> papers;
 
     /**
-     * For counting the number of articles in the Guardian data.
+     * For counting the number of articles in a paper.
      */
-    int guardianArticleCount;
+    HashMap<String, Integer> paperArticleCounts;
 
     /**
-     * For counting the number of articles in the Daily Mail or Mail On Sunday
-     * data.
+     * For counting the number of articles in a paper by the day of week.
      */
-    int dailyMailOrMailOnSundayArticleCount;
+    HashMap<String, TreeMap<DayOfWeek, Integer>> paperArticleCountsByDayOfWeek;
 
-    /**
-     * For counting the number of articles in the Daily Mirror data.
-     */
-    int dailyMirrorArticleCount;
-
-    /**
-     * For counting the number of articles in the Daily Telegraph data.
-     */
-    int telegraphArticleCount;
+    String sTheExpress = "The Express";
+    String sTheGuardian = "The Guardian";
+    String sDailyMail = "DAILY MAIL (London)";
+    String sMailOnSunday = "MAIL ON SUNDAY (London)";
+    String sDailyMirror = "Daily Mirror";
+    String sTheDailyTelegraph = "The Daily Telegraph (London)";
+    String sBEN = "Birmingham Evening Mail";
+    String sMEN = "Manchester Evening News";
+    String sTheEveningStandard = "The Evening Standard (London)";
 
     /**
      * If true then a file with headlines for articles containing the term
@@ -118,14 +117,10 @@ public class Text_Processor2 {
     String headlineTerm;
 
     /**
-     * If true then this is a run for Felicity otherwise it is a run for Emma.
+     * If runID == 0, then this is a run for Felicity; if runID == 1, then this
+     * is a run for Emma; ; if runID == 1, then this is a run for Harriet.
      */
-    boolean runForFelicity;
-
-    /**
-     * For storing names of newspapers to be processed
-     */
-    ArrayList<String> papers;
+    int runID;
 
     /**
      * This is the main processing method.
@@ -143,8 +138,9 @@ public class Text_Processor2 {
         /**
          * Set which run to do.
          */
-        runForFelicity = true;
-        //runForFelicity = false; // run for Emma
+        runID = 0; // Felicity
+//        runID = 1; // Emma
+//        runID = 2; // Harriet
 
         /**
          * Set start and end dates
@@ -152,7 +148,7 @@ public class Text_Processor2 {
         LocalDate[] startDates;
         LocalDate[] endDates;
         int numberOfDateRanges;
-        if (runForFelicity) {
+        if (runID == 0) {
             numberOfDateRanges = 1;
             startDates = new LocalDate[numberOfDateRanges];
             endDates = new LocalDate[numberOfDateRanges];
@@ -175,28 +171,45 @@ public class Text_Processor2 {
         }
 
         /**
-         * Initialise papers
+         * Initialise papers, paperArticleCounts and
+         * paperArticleCountsByDayOfWeek.
          */
         papers = new ArrayList<>();
-        if (runForFelicity) {
-            papers.add("The Express");
-            papers.add("The Guardian");
-        } else {
-            papers.add("The Guardian");
-            papers.add("DAILY MAIL (London)");
-            papers.add("MAIL ON SUNDAY (London)");
-            papers.add("Daily Mirror");
-            papers.add("The Daily Telegraph (London)");
+        switch (runID) {
+            case 0:
+                papers.add(sTheExpress);
+                papers.add(sTheGuardian);
+                break;
+            case 1:
+                papers.add(sTheGuardian);
+                papers.add(sDailyMirror);
+                papers.add(sMailOnSunday);
+                papers.add(sDailyMirror);
+                papers.add(sTheDailyTelegraph);
+                break;
+            default:
+                papers.add(sBEN);
+                papers.add(sMEN);
+                papers.add(sTheEveningStandard);
+                break;
         }
+        paperArticleCounts = new HashMap<>();
+        paperArticleCountsByDayOfWeek = new HashMap<>();
 
         /**
          * Get terms and declare key variables.
          */
         Object[] allTerms;
-        if(runForFelicity) {
-            allTerms = getAllTermsFelicity();
-        } else {
-            allTerms = getAllTermsEmma();
+        switch (runID) {
+            case 0:
+                allTerms = getAllTermsFelicity();
+                break;
+            case 1:
+                allTerms = getAllTermsEmma();
+                break;
+            default:
+                allTerms = getAllTermsHarriet();
+                break;
         }
         TreeMap<Integer, ArrayList<String>> allterms;
         allterms = (TreeMap<Integer, ArrayList<String>>) allTerms[0];
@@ -211,11 +224,17 @@ public class Text_Processor2 {
         dataDirName = System.getProperty("user.dir") + "/data";
         Files = new Text_Files(dataDirName);
         String dirname;
-        if (runForFelicity) {
-            dirname = "LexisNexis-20171127T155442Z-001";
-//        dirname ="LexisNexis-20171122T195223Z-001";
-        } else {
-            dirname = "Emma";
+        switch (runID) {
+            case 0:
+                dirname = "LexisNexis-20171127T155442Z-001";
+//                dirname ="LexisNexis-20171122T195223Z-001";
+                break;
+            case 1:
+                dirname = "Emma";
+                break;
+            default:
+                dirname = "Harriet";
+                break;
         }
         File inputDir;
         File outDir;
@@ -243,6 +262,8 @@ public class Text_Processor2 {
         File[] inputs0;
         File[] inputs1;
         inputs0 = inputDir.listFiles();
+        Iterator<String> papersIte;
+        String p;
 
         /**
          * Process the data for each start and end time period going through
@@ -261,12 +282,22 @@ public class Text_Processor2 {
              * inputDir contains only directories and no files.
              */
             for (File input0 : inputs0) {
-
-                expressArticleCount = 0;
-                guardianArticleCount = 0;
-                dailyMailOrMailOnSundayArticleCount = 0;
-                dailyMirrorArticleCount = 0;
-                telegraphArticleCount = 0;
+                // Reset paperArticleCounts
+                papersIte = papers.iterator();
+                while (papersIte.hasNext()) {
+                    p = papersIte.next();
+                    paperArticleCounts.put(p, 0);
+                    TreeMap<DayOfWeek, Integer> articleCountsByDayOfWeek;
+                    articleCountsByDayOfWeek = new TreeMap<>();
+                    articleCountsByDayOfWeek.put(DayOfWeek.MONDAY, 0);
+                    articleCountsByDayOfWeek.put(DayOfWeek.TUESDAY, 0);
+                    articleCountsByDayOfWeek.put(DayOfWeek.WEDNESDAY, 0);
+                    articleCountsByDayOfWeek.put(DayOfWeek.THURSDAY, 0);
+                    articleCountsByDayOfWeek.put(DayOfWeek.FRIDAY, 0);
+                    articleCountsByDayOfWeek.put(DayOfWeek.SATURDAY, 0);
+                    articleCountsByDayOfWeek.put(DayOfWeek.SUNDAY, 0);
+                    paperArticleCountsByDayOfWeek.put(p, articleCountsByDayOfWeek);
+                }
 
                 name = input0.getName();
                 outFile = new File(outDir, name + "Counts.csv");
@@ -440,14 +471,24 @@ public class Text_Processor2 {
                 if (writeHeadlines) {
                     pwHeadlines.close();
                 }
-                if (runForFelicity) {
-                    System.out.println("expressArticleCount " + expressArticleCount);
-                    System.out.println("guardianArticleCount " + guardianArticleCount);
-                } else {
-                    System.out.println("guardianArticleCount " + guardianArticleCount);
-                    System.out.println("dailyMailOrMailOnSundayArticleCount " + dailyMailOrMailOnSundayArticleCount);
-                    System.out.println("dailyMirrorArticleCount " + dailyMirrorArticleCount);
-                    System.out.println("telegraphArticleCount " + telegraphArticleCount);
+                papersIte = papers.iterator();
+                while (papersIte.hasNext()) {
+                    p = papersIte.next();
+                    int c = paperArticleCounts.get(p);
+                    System.out.println(p + " ArticleCount " + c);
+                    if (c > 0) {
+                        TreeMap<DayOfWeek, Integer> DoWArticleCounts;
+                        DoWArticleCounts = paperArticleCountsByDayOfWeek.get(p);
+                        Iterator<DayOfWeek> DoWIte;
+                        DoWIte = DoWArticleCounts.keySet().iterator();
+                        DayOfWeek DoW;
+                        while (DoWIte.hasNext()) {
+                            DoW = DoWIte.next();
+                            System.out.println(p + " ArticleCount on "
+                                    + DoW.toString() + " "
+                                    + DoWArticleCounts.get(DoW));
+                        }
+                    }
                 }
             }
         }
@@ -488,11 +529,16 @@ public class Text_Processor2 {
     }
 
     boolean inArticle;
-    boolean isExpressArticle;
+
+    String paper;
+    boolean isTheExpressArticle;
     boolean isDailyMailOrMailOnSundayArticle;
     boolean isDailyMirrorArticle;
     boolean isGuardianArticle;
     boolean isTelegraphArticle;
+    boolean isMENArticle;
+    boolean isBENArticle;
+    boolean isTheEveningStandardArticle;
 
     /**
      * Iteratively parse through nodes.
@@ -522,12 +568,16 @@ public class Text_Processor2 {
             //System.out.println("value"+ value);
             if (papers.contains(value)) {
                 //System.out.println(value);
-                isExpressArticle = value.equalsIgnoreCase("The Express");
-                isDailyMailOrMailOnSundayArticle = value.equalsIgnoreCase("DAILY MAIL (London)")
-                        || value.equalsIgnoreCase("MAIL ON SUNDAY (London)");
-                isDailyMirrorArticle = value.equalsIgnoreCase("Daily Mirror");
-                isGuardianArticle = value.equalsIgnoreCase("The Guardian");
-                isTelegraphArticle = value.equalsIgnoreCase("The Daily Telegraph (London)");
+                paper = value;
+                isTheExpressArticle = value.equalsIgnoreCase(sTheExpress);
+                isDailyMailOrMailOnSundayArticle = value.equalsIgnoreCase(sDailyMail)
+                        || value.equalsIgnoreCase(sMailOnSunday);
+                isDailyMirrorArticle = value.equalsIgnoreCase(sDailyMirror);
+                isGuardianArticle = value.equalsIgnoreCase(sTheGuardian);
+                isTelegraphArticle = value.equalsIgnoreCase(sTheDailyTelegraph);
+                isBENArticle = value.equalsIgnoreCase(sBEN);
+                isMENArticle = value.equalsIgnoreCase(sMEN);
+                isTheEveningStandardArticle = value.equalsIgnoreCase(sTheEveningStandard);
                 return true;
                 //parseExpressNode(node);
             }
@@ -907,8 +957,10 @@ public class Text_Processor2 {
             doc = Jsoup.parse(input, "utf-8");
             //String title = doc.title();
             //System.out.println(title);
+
         } catch (IOException ex) {
-            Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(Text_Processor2.class
+                    .getName()).log(Level.SEVERE, null, ex);
         }
 
         ArrayList<String> terms;
@@ -1035,22 +1087,18 @@ public class Text_Processor2 {
 
                 // Filter for a given time period               
                 if (ld.isAfter(startDate) && ld.isBefore(endDate)) {
-                    if (isExpressArticle) {
-                        expressArticleCount++;
-                    } else if (isGuardianArticle) {
-                        guardianArticleCount++;
-                    } else if (isDailyMailOrMailOnSundayArticle) {
-                        dailyMailOrMailOnSundayArticleCount++;
-                    } else if (isDailyMirrorArticle) {
-                        dailyMirrorArticleCount++;
-                    } else if (isTelegraphArticle) {
-                        telegraphArticleCount++;
-                    }
+                    paperArticleCounts.put(paper,
+                            paperArticleCounts.get(paper) + 1);
                     //System.out.println("Title" + Title);
                     //System.out.println("Section" + Section);
                     //System.out.println("Length" + Length);
                     //System.out.println("Article" + Article);
                     DayOfWeek day = ld.getDayOfWeek();
+                    TreeMap<DayOfWeek, Integer> articleCountsByDayOfWeek;
+                    articleCountsByDayOfWeek = paperArticleCountsByDayOfWeek.get(paper);
+                    
+                    articleCountsByDayOfWeek.put(day,
+                            articleCountsByDayOfWeek.get(day) + 1);
                     i = 0;
                     iteB = allterms.keySet().iterator();
                     while (iteB.hasNext()) {
@@ -1080,7 +1128,7 @@ public class Text_Processor2 {
 //                        // Fire off to Guardian Open Data to try to get page number...
 //                        // This is now done in agdt-web in uk.ac.leeds.ccg.andyt.web.guardian.GuardianGetPage
 //                        // See 
-//                        if (!isExpressArticle) {
+//                        if (!isTheExpressArticle) {
 //                            int code = 1;
 //                            String title;
 //                            title = Title.replaceAll(" ","-");
@@ -1284,11 +1332,14 @@ public class Text_Processor2 {
         try {
             result = br.readLine();
             br.close();
+
         } catch (IOException ex) {
-            Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE,
-                    null, ex);
+            Logger.getLogger(Text_Processor2.class
+                    .getName()).log(Level.SEVERE,
+                            null, ex);
         }
         return result;
+
     }
 
     /**
@@ -2024,6 +2075,49 @@ public class Text_Processor2 {
         mktterms.add("work");
         mktterms.add("war");
         index += mktterms.size();
+        // Headline terms
+        if (writeHeadlines) {
+            termTypes.put(i, "Miscellaneous Key Terms");
+            ArrayList hterms = new ArrayList();
+            allterms.put(i, hterms);
+            i++;
+            hterms.add(headlineTerm);
+            index += hterms.size();
+        }
+        int numberOfTerms = index + 1;
+        result[2] = numberOfTerms;
+        return result;
+    }
+
+    /**
+     * Initialise terms. There are capitalisations and space that are important
+     * in these terms. There are also terms separated by " OR ". For those terms
+     * the article counts will just measure the the number of articles in the
+     * selections where either term appears and will sum up the number of times
+     * the terms appear in the articles.
+     *
+     * @TODO: This could all be read in from a file rather than being hard coded
+     * here.
+     */
+    Object[] getAllTermsHarriet() {
+        Object[] result;
+        result = new Object[3];
+        TreeMap<Integer, ArrayList<String>> allterms = new TreeMap<>();
+        result[0] = allterms;
+        HashMap<Integer, String> termTypes = new HashMap<>();
+        result[1] = termTypes;
+        int i = 0;
+        int index = -1;
+        // Key Terms
+        termTypes.put(i, "Key Terms");
+        ArrayList kterms = new ArrayList();
+        allterms.put(i, kterms);
+        i++;
+        kterms.add("hate crime");
+        kterms.add("racist OR racism");
+        kterms.add("muslim");
+        kterms.add("islamophobia");
+        index += kterms.size();
         // Headline terms
         if (writeHeadlines) {
             termTypes.put(i, "Miscellaneous Key Terms");
