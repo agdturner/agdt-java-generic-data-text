@@ -40,6 +40,7 @@ import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import uk.ac.leeds.ccg.andyt.generic.io.Generic_StaticIO;
 import uk.ac.leeds.ccg.andyt.generic.lang.Generic_StaticString;
+import uk.ac.leeds.ccg.andyt.generic.utilities.LocalDateRange;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -145,29 +146,22 @@ public class Text_Processor2 {
         /**
          * Set start and end dates
          */
-        LocalDate[] startDates;
-        LocalDate[] endDates;
-        int numberOfDateRanges;
+        ArrayList<LocalDateRange> dates;
+        dates = new ArrayList<>();
         if (runID == 0) {
-            numberOfDateRanges = 1;
-            startDates = new LocalDate[numberOfDateRanges];
-            endDates = new LocalDate[numberOfDateRanges];
-            startDates[0] = LocalDate.of(2016, Month.MARCH, 23);
-//            startDates[0] = LocalDate.of(2013, Month.JANUARY, 1);
-//            startDates[1] = LocalDate.of(2015, Month.JUNE, 1);
-//            startDates[2] = LocalDate.of(2015, Month.SEPTEMBER, 1);
-//            startDates[3] = LocalDate.of(2016, Month.APRIL, 1);
-            endDates[0] = LocalDate.of(2016, Month.JUNE, 23);
-//            endDates[0] = LocalDate.of(2017, Month.DECEMBER, 31);
-//            endDates[1] = LocalDate.of(2015, Month.AUGUST, 31);
-//            endDates[2] = LocalDate.of(2015, Month.NOVEMBER, 30);
-//            endDates[3] = LocalDate.of(2016, Month.JUNE, 30);
+            dates.add(new LocalDateRange(LocalDate.of(2013, Month.JANUARY, 1),
+                    LocalDate.of(2017, Month.DECEMBER, 31)));
+            dates.add(new LocalDateRange(LocalDate.of(2015, Month.JUNE, 1),
+                    LocalDate.of(2015, Month.AUGUST, 31)));
+            dates.add(new LocalDateRange(LocalDate.of(2015, Month.SEPTEMBER, 1),
+                    LocalDate.of(2015, Month.NOVEMBER, 30)));
+            dates.add(new LocalDateRange(LocalDate.of(2016, Month.APRIL, 1),
+                    LocalDate.of(2016, Month.JUNE, 30)));
+            dates.add(new LocalDateRange(LocalDate.of(2016, Month.MARCH, 23),
+                    LocalDate.of(2016, Month.JUNE, 23)));
         } else {
-            numberOfDateRanges = 1;
-            startDates = new LocalDate[numberOfDateRanges];
-            endDates = new LocalDate[numberOfDateRanges];
-            startDates[0] = LocalDate.of(2015, Month.JUNE, 1);
-            endDates[0] = LocalDate.of(2018, Month.AUGUST, 31);
+            dates.add(new LocalDateRange(LocalDate.of(2015, Month.JUNE, 1),
+                    LocalDate.of(2018, Month.AUGUST, 31)));
         }
 
         /**
@@ -269,10 +263,18 @@ public class Text_Processor2 {
          * Process the data for each start and end time period going through
          * each input file.
          */
-        for (int dateIndex = 0; dateIndex < numberOfDateRanges; dateIndex++) {
+        Iterator<LocalDateRange> iteDR;
+        iteDR = dates.iterator();
+        while (iteDR.hasNext()) {
+            LocalDateRange dateRange;
+            dateRange = iteDR.next();
+            LocalDate start;
+            LocalDate end;
+            start = dateRange.getStart();
+            end = dateRange.getEnd();
             outDir = new File(Files.getLexisNexisOutputDataDir(),
-                    dirname + "/LexisNexis" + startDates[dateIndex].toString()
-                    + "_" + endDates[dateIndex].toString());
+                    dirname + "/LexisNexis" + start.toString()
+                    + "_" + end.toString());
             if (!outDir.exists()) {
                 outDir.mkdirs();
             }
@@ -364,8 +366,8 @@ public class Text_Processor2 {
                         /**
                          * Parse the HTML file and obtain part of the result.
                          */
-                        results = parseHTML(numberOfTerms, startDates[dateIndex],
-                                endDates[dateIndex], allterms, input1);
+                        results = parseHTML(numberOfTerms, start, end, allterms,
+                                input1);
                         /**
                          * Combine the results from parsing this file to the
                          * overall results.
@@ -460,8 +462,10 @@ public class Text_Processor2 {
                         System.out.print("," + grandTotalArticleCountsForTerms[i]);
                         pwCounts.print("," + grandTotalArticleCountsForTerms[i]);
                         i++;
-                        printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalTermCountOnDays.get(term));
-                        printTermCountOnDay(pwCounts, mondayToSaturday, term, grandTotalArticleCountsForTermsOnDays.get(term));
+                        printTermCountOnDay(pwCounts, mondayToSaturday, term, 
+                                grandTotalTermCountOnDays.get(term));
+                        printTermCountOnDay(pwCounts, mondayToSaturday, term, 
+                                grandTotalArticleCountsForTermsOnDays.get(term));
                         System.out.println();
                         pwCounts.println();
                     }
@@ -494,10 +498,8 @@ public class Text_Processor2 {
         }
     }
 
-    void printTermCountOnDay(
-            PrintWriter pw,
-            ArrayList<DayOfWeek> mondayToSaturday,
-            String term,
+    void printTermCountOnDay(PrintWriter pw,
+            ArrayList<DayOfWeek> mondayToSaturday, String term,
             TreeMap<DayOfWeek, Integer> grandTotalTermCountOnDay) {
         Iterator<DayOfWeek> ite;
         DayOfWeek day;
@@ -1096,7 +1098,7 @@ public class Text_Processor2 {
                     DayOfWeek day = ld.getDayOfWeek();
                     TreeMap<DayOfWeek, Integer> articleCountsByDayOfWeek;
                     articleCountsByDayOfWeek = paperArticleCountsByDayOfWeek.get(paper);
-                    
+
                     articleCountsByDayOfWeek.put(day,
                             articleCountsByDayOfWeek.get(day) + 1);
                     i = 0;
@@ -1777,6 +1779,8 @@ public class Text_Processor2 {
         mktterms.add("asylum");
         mktterms.add("attack");
         mktterms.add("brexit");
+        mktterms.add("brexit OR EU Referendum OR European Union Referendum");
+        mktterms.add("bremain OR remainer");
         mktterms.add("burden");
         mktterms.add("child OR children");
         mktterms.add("chaos");
@@ -1806,6 +1810,7 @@ public class Text_Processor2 {
         mktterms.add("nationalism OR nation");
         mktterms.add("plight");
         mktterms.add("relief");
+        mktterms.add("referendum");
         mktterms.add("resettlement");
         mktterms.add("security");
         mktterms.add("subside");
