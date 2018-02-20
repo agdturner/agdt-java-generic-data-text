@@ -462,9 +462,9 @@ public class Text_Processor2 {
                         System.out.print("," + grandTotalArticleCountsForTerms[i]);
                         pwCounts.print("," + grandTotalArticleCountsForTerms[i]);
                         i++;
-                        printTermCountOnDay(pwCounts, mondayToSaturday, term, 
+                        printTermCountOnDay(pwCounts, mondayToSaturday, term,
                                 grandTotalTermCountOnDays.get(term));
-                        printTermCountOnDay(pwCounts, mondayToSaturday, term, 
+                        printTermCountOnDay(pwCounts, mondayToSaturday, term,
                                 grandTotalArticleCountsForTermsOnDays.get(term));
                         System.out.println();
                         pwCounts.println();
@@ -1786,6 +1786,7 @@ public class Text_Processor2 {
         mktterms.add("chaos");
         mktterms.add("crime");
         mktterms.add("crisis");
+        mktterms.add("crusade");
         mktterms.add("deal");
         mktterms.add("desperate OR desparation");
         mktterms.add("drown OR drowning");
