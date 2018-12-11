@@ -30,8 +30,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import uk.ac.leeds.ccg.andyt.generic.io.Generic_StaticIO;
-import uk.ac.leeds.ccg.andyt.generic.lang.Generic_StaticString;
+import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
+import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -128,11 +128,11 @@ public class Text_Processor {
         for (File input0 : inputs0) {
             name = input0.getName();
             outFile = new File(outDir, name + "Counts.csv");
-            pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
+            pwCounts = Generic_IO.getPrintWriter(outFile, false);
             if (writeHeadlines) {
                 outFile = new File(outDir,
                         name + "HeadlinesForArticlesContaining_Syria.txt");
-                pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
+                pwHeadlines = Generic_IO.getPrintWriter(outFile, false);
             }
             /**
              * Print out the name of the directory/File.
@@ -338,7 +338,7 @@ public class Text_Processor {
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
         BufferedReader br;
-        br = Generic_StaticIO.getBufferedReader(input);
+        br = Generic_IO.getBufferedReader(input);
         String line = null;
         boolean read = false;
         int n;
@@ -501,7 +501,7 @@ public class Text_Processor {
      * @return
      */
     int getWordCount(String word, String line) {
-        String lowerCaseLine = Generic_StaticString.getLowerCase(line);
+        String lowerCaseLine = Generic_String.getLowerCase(line);
         int result = 0;
         result += lowerCaseLine.split(word).length - 1;
         return result;
@@ -568,7 +568,7 @@ public class Text_Processor {
 //            stringDate += " dayOfMonth " + dayOfMonth;
 //            stringDate += " dayOfWeek " + dayOfWeek;
 //            System.out.println(stringDate);
-            Month m = Month.valueOf(Generic_StaticString.getUpperCase(month));
+            Month m = Month.valueOf(Generic_String.getUpperCase(month));
             result = LocalDate.of(Integer.valueOf(year), m, Integer.valueOf(dayOfMonth));
             //System.out.println(LD.toString());
         }

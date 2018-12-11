@@ -38,9 +38,9 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
-import uk.ac.leeds.ccg.andyt.generic.io.Generic_StaticIO;
-import uk.ac.leeds.ccg.andyt.generic.lang.Generic_StaticString;
-import uk.ac.leeds.ccg.andyt.generic.utilities.LocalDateRange;
+import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
+import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
+import uk.ac.leeds.ccg.andyt.generic.time.Generic_LocalDateRange;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -146,21 +146,27 @@ public class Text_Processor2 {
         /**
          * Set start and end dates
          */
-        ArrayList<LocalDateRange> dates;
+        ArrayList<Generic_LocalDateRange> dates;
         dates = new ArrayList<>();
         if (runID == 0) {
-            dates.add(new LocalDateRange(LocalDate.of(2013, Month.JANUARY, 1),
+            dates.add(new Generic_LocalDateRange(
+                    LocalDate.of(2013, Month.JANUARY, 1),
                     LocalDate.of(2017, Month.DECEMBER, 31)));
-            dates.add(new LocalDateRange(LocalDate.of(2015, Month.JUNE, 1),
+            dates.add(new Generic_LocalDateRange(
+                    LocalDate.of(2015, Month.JUNE, 1),
                     LocalDate.of(2015, Month.AUGUST, 31)));
-            dates.add(new LocalDateRange(LocalDate.of(2015, Month.SEPTEMBER, 1),
+            dates.add(new Generic_LocalDateRange(
+                    LocalDate.of(2015, Month.SEPTEMBER, 1),
                     LocalDate.of(2015, Month.NOVEMBER, 30)));
-            dates.add(new LocalDateRange(LocalDate.of(2016, Month.APRIL, 1),
+            dates.add(new Generic_LocalDateRange(
+                    LocalDate.of(2016, Month.APRIL, 1),
                     LocalDate.of(2016, Month.JUNE, 30)));
-            dates.add(new LocalDateRange(LocalDate.of(2016, Month.MARCH, 23),
+            dates.add(new Generic_LocalDateRange(
+                    LocalDate.of(2016, Month.MARCH, 23),
                     LocalDate.of(2016, Month.JUNE, 23)));
         } else {
-            dates.add(new LocalDateRange(LocalDate.of(2015, Month.JUNE, 1),
+            dates.add(new Generic_LocalDateRange(
+                    LocalDate.of(2015, Month.JUNE, 1),
                     LocalDate.of(2018, Month.AUGUST, 31)));
         }
 
@@ -263,10 +269,10 @@ public class Text_Processor2 {
          * Process the data for each start and end time period going through
          * each input file.
          */
-        Iterator<LocalDateRange> iteDR;
+        Iterator<Generic_LocalDateRange> iteDR;
         iteDR = dates.iterator();
         while (iteDR.hasNext()) {
-            LocalDateRange dateRange;
+            Generic_LocalDateRange dateRange;
             dateRange = iteDR.next();
             LocalDate start;
             LocalDate end;
@@ -303,11 +309,11 @@ public class Text_Processor2 {
 
                 name = input0.getName();
                 outFile = new File(outDir, name + "Counts.csv");
-                pwCounts = Generic_StaticIO.getPrintWriter(outFile, false);
+                pwCounts = Generic_IO.getPrintWriter(outFile, false);
                 if (writeHeadlines) {
                     outFile = new File(outDir,
                             name + "HeadlinesForArticlesContaining_" + headlineTerm + ".csv");
-                    pwHeadlines = Generic_StaticIO.getPrintWriter(outFile, false);
+                    pwHeadlines = Generic_IO.getPrintWriter(outFile, false);
                     pwHeadlines.println("Date, Section, Length, Title");
                 }
                 /**
@@ -952,7 +958,7 @@ public class Text_Processor2 {
         TreeSet<DateOutlineDetails> headlineTermDateHeadlines;
         headlineTermDateHeadlines = new TreeSet<>();
 //        BufferedReader br;
-//        br = Generic_StaticIO.getBufferedReader(input);
+//        br = Generic_IO.getBufferedReader(input);
 
         Document doc = null;
         try {
@@ -1240,7 +1246,7 @@ public class Text_Processor2 {
      * @return
      */
     int getTermCount(String term, String text) {
-        //String lowerCaseLine = Generic_StaticString.getLowerCase(line);
+        //String lowerCaseLine = Generic_String.getLowerCase(line);
         int result = 0;
         if (term.contains(" OR ")) {
             String[] split;
@@ -1271,7 +1277,7 @@ public class Text_Processor2 {
          * Try with a capital first letter (as terms at the start of a sentence
          * have capital first letters).
          */
-        s = Generic_StaticString.getCapitalFirstLetter(term);
+        s = Generic_String.getCapitalFirstLetter(term);
         /**
          * Adding a space before and after the term to distinguish from words
          * that contain terms.
@@ -1311,7 +1317,7 @@ public class Text_Processor2 {
 //        stringDate +="dayOfMonth"+ dayOfMonth;
 //        stringDate +="dayOfWeek"+ dayOfWeek;
 //        System.out.println(stringDate);
-        Month m = Month.valueOf(Generic_StaticString.getUpperCase(month));
+        Month m = Month.valueOf(Generic_String.getUpperCase(month));
         result = LocalDate.of(Integer.valueOf(year), m, Integer.valueOf(dayOfMonth));
         return result;
     }
@@ -1330,7 +1336,7 @@ public class Text_Processor2 {
         dir = new File(Files.getDataDir(), "private");
         f = new File(dir, "GuardianAPIKey.txt");
         BufferedReader br;
-        br = Generic_StaticIO.getBufferedReader(f);
+        br = Generic_IO.getBufferedReader(f);
         try {
             result = br.readLine();
             br.close();
