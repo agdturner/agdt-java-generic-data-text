@@ -41,6 +41,7 @@ import org.jsoup.select.Elements;
 import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
 import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
 import uk.ac.leeds.ccg.andyt.generic.time.Generic_LocalDateRange;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -220,9 +221,10 @@ public class Text_Processor2 {
         /**
          * Initialise directories
          */
-        String dataDirName;
-        dataDirName = System.getProperty("user.dir") + "/data";
-        Files = new Text_Files(dataDirName);
+        Text_Strings strings = new Text_Strings();
+        File dataDir;
+        dataDir = new File(System.getProperty("user.dir"), strings.s_data);
+        Files = new Text_Files(strings, dataDir);
         String dirname;
         switch (runID) {
             case 0:

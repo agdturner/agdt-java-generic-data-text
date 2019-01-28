@@ -32,6 +32,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
 import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -79,21 +80,19 @@ public class Text_Processor {
         /**
          * Initialise directories
          */
-        String dataDirName;
-        dataDirName = System.getProperty("user.dir") + "/data";
-        Files = new Text_Files(dataDirName);
+        File dataDir;
+        dataDir = new File (System.getProperty("user.dir"), "data");
+        Files = new Text_Files(new Text_Strings(), dataDir);
         String dirname;
         //dirname = "LexisNexis-20171127T155442Z-001";
         dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outDir;
-        inputDir = new File(
-                Files.getLexisNexisInputDataDir(),
-                dirname + "/LexisNexis");
+        inputDir = new File(Files.getLexisNexisInputDataDir(), dirname);
+        inputDir = new File(inputDir, "LexisNexis");
         System.out.println(inputDir);
-        outDir = new File(
-                Files.getLexisNexisOutputDataDir(),
-                dirname + "/LexisNexis");
+        outDir = new File(Files.getLexisNexisOutputDataDir(), dirname);
+        outDir = new File(outDir, "LexisNexis");
         if (outDir.exists()) {
             outDir.mkdirs();
         }
