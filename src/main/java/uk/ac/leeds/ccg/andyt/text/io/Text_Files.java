@@ -30,7 +30,7 @@ public class Text_Files extends Generic_Files {
     private File LexisNexisOutputDataDir;
 
     protected Text_Files() {
-        Strings = new Text_Strings();
+        strings = new Text_Strings();
     }
 
     public Text_Files(Text_Strings s, File dataDir) {
