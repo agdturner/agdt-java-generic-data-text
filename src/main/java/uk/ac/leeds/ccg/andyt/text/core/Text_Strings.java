@@ -13,6 +13,8 @@ import uk.ac.leeds.ccg.andyt.generic.core.Generic_Strings;
  */
 public class Text_Strings extends Generic_Strings {
     
+    public static final String s_LexisNexis = "LexisNexis";
+    
     public Text_Strings(){}
     
 }

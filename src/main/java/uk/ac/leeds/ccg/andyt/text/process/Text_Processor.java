@@ -47,9 +47,9 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 public class Text_Processor {
 
     /**
-     * Files is used to help manage input and output to the file system.
+     * files is used to help manage input and output to the file system.
      */
-    Text_Files Files;
+    Text_Files files;
 
     public Text_Processor() {
     }
@@ -80,18 +80,16 @@ public class Text_Processor {
         /**
          * Initialise directories
          */
-        File dataDir;
-        dataDir = new File (System.getProperty("user.dir"), "data");
-        Files = new Text_Files(new Text_Strings(), dataDir);
+        files = new Text_Files();
         String dirname;
         //dirname = "LexisNexis-20171127T155442Z-001";
         dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outDir;
-        inputDir = new File(Files.getLexisNexisInputDataDir(), dirname);
+        inputDir = new File(files.getLexisNexisInputDataDir(), dirname);
         inputDir = new File(inputDir, "LexisNexis");
         System.out.println(inputDir);
-        outDir = new File(Files.getLexisNexisOutputDataDir(), dirname);
+        outDir = new File(files.getLexisNexisOutputDataDir(), dirname);
         outDir = new File(outDir, "LexisNexis");
         if (outDir.exists()) {
             outDir.mkdirs();

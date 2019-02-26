@@ -65,9 +65,9 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 public class Text_Processor2 {
 
     /**
-     * Files is used to help manage input and output to the file system.
+     * files is used to help manage input and output to the file system.
      */
-    Text_Files Files;
+    Text_Files files;
 
     public Text_Processor2() {
     }
@@ -221,10 +221,7 @@ public class Text_Processor2 {
         /**
          * Initialise directories
          */
-        Text_Strings strings = new Text_Strings();
-        File dataDir;
-        dataDir = new File(System.getProperty("user.dir"), strings.s_data);
-        Files = new Text_Files(strings, dataDir);
+        files = new Text_Files();
         String dirname;
         switch (runID) {
             case 0:
@@ -240,7 +237,7 @@ public class Text_Processor2 {
         }
         File inputDir;
         File outDir;
-        inputDir = new File(Files.getLexisNexisInputDataDir(),
+        inputDir = new File(files.getLexisNexisInputDataDir(),
                 dirname + "/LexisNexis");
         System.out.println(inputDir);
 
@@ -280,7 +277,7 @@ public class Text_Processor2 {
             LocalDate end;
             start = dateRange.getStart();
             end = dateRange.getEnd();
-            outDir = new File(Files.getLexisNexisOutputDataDir(),
+            outDir = new File(files.getLexisNexisOutputDataDir(),
                     dirname + "/LexisNexis" + start.toString()
                     + "_" + end.toString());
             if (!outDir.exists()) {
@@ -1335,7 +1332,7 @@ public class Text_Processor2 {
         String result = "";
         File f;
         File dir;
-        dir = new File(Files.getDataDir(), "private");
+        dir = new File(files.getDataDir(), "private");
         f = new File(dir, "GuardianAPIKey.txt");
         BufferedReader br;
         br = Generic_IO.getBufferedReader(f);
