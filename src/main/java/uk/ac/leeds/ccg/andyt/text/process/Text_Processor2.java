@@ -41,6 +41,8 @@ import org.jsoup.select.Elements;
 import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
 import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
 import uk.ac.leeds.ccg.andyt.generic.time.Generic_LocalDateRange;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Environment;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Object;
 import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
@@ -62,18 +64,19 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
  * these terms in each set of newspapers. For each set of outputs a time period
  * can be set to return results for a specific time period.
  */
-public class Text_Processor2 {
+public class Text_Processor2 extends Text_Object {
 
     /**
      * files is used to help manage input and output to the file system.
      */
     Text_Files files;
 
-    public Text_Processor2() {
+    public Text_Processor2(Text_Environment e) {
+        super(e);
     }
 
     public static void main(String[] args) {
-        new Text_Processor2().run();
+        new Text_Processor2(new Text_Environment()).run();
     }
 
     /**
@@ -308,11 +311,11 @@ public class Text_Processor2 {
 
                 name = input0.getName();
                 outFile = new File(outDir, name + "Counts.csv");
-                pwCounts = Generic_IO.getPrintWriter(outFile, false);
+                pwCounts = env.io.getPrintWriter(outFile, false);
                 if (writeHeadlines) {
                     outFile = new File(outDir,
                             name + "HeadlinesForArticlesContaining_" + headlineTerm + ".csv");
-                    pwHeadlines = Generic_IO.getPrintWriter(outFile, false);
+                    pwHeadlines = env.io.getPrintWriter(outFile, false);
                     pwHeadlines.println("Date, Section, Length, Title");
                 }
                 /**
@@ -1329,23 +1332,21 @@ public class Text_Processor2 {
      * @return
      */
     String getGuardianAPIKey() {
-        String result = "";
+        String r = "";
         File f;
         File dir;
         dir = new File(files.getDataDir(), "private");
         f = new File(dir, "GuardianAPIKey.txt");
         BufferedReader br;
-        br = Generic_IO.getBufferedReader(f);
+        br = env.io.getBufferedReader(f);
         try {
-            result = br.readLine();
+            r = br.readLine();
             br.close();
 
         } catch (IOException ex) {
-            Logger.getLogger(Text_Processor2.class
-                    .getName()).log(Level.SEVERE,
-                            null, ex);
+            Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return result;
+        return r;
 
     }
 

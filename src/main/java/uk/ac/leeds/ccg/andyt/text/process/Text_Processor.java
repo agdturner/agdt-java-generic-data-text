@@ -30,9 +30,9 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
 import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
-import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Environment;
+import uk.ac.leeds.ccg.andyt.text.core.Text_Object;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -44,18 +44,19 @@ import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
  * 1st of April 2015 to the 10th of February 2016. The search criteria for the
  * articles included the words "refugee" or "brexit" or both.
  */
-public class Text_Processor {
+public class Text_Processor extends Text_Object {
 
     /**
      * files is used to help manage input and output to the file system.
      */
     Text_Files files;
 
-    public Text_Processor() {
+    public Text_Processor(Text_Environment e) {
+        super (e);
     }
 
     public static void main(String[] args) {
-        new Text_Processor().run();
+        new Text_Processor(new Text_Environment()).run();
     }
 
     /**
@@ -125,11 +126,11 @@ public class Text_Processor {
         for (File input0 : inputs0) {
             name = input0.getName();
             outFile = new File(outDir, name + "Counts.csv");
-            pwCounts = Generic_IO.getPrintWriter(outFile, false);
+            pwCounts = env.io.getPrintWriter(outFile, false);
             if (writeHeadlines) {
                 outFile = new File(outDir,
                         name + "HeadlinesForArticlesContaining_Syria.txt");
-                pwHeadlines = Generic_IO.getPrintWriter(outFile, false);
+                pwHeadlines = env.io.getPrintWriter(outFile, false);
             }
             /**
              * Print out the name of the directory/File.
@@ -335,7 +336,7 @@ public class Text_Processor {
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
         BufferedReader br;
-        br = Generic_IO.getBufferedReader(input);
+        br = env.io.getBufferedReader(input);
         String line = null;
         boolean read = false;
         int n;
