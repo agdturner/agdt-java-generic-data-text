@@ -76,7 +76,11 @@ public class Text_Processor2 extends Text_Object {
     }
 
     public static void main(String[] args) {
-        new Text_Processor2(new Text_Environment()).run();
+        try {
+            new Text_Processor2(new Text_Environment()).run();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 
     /**
@@ -240,7 +244,7 @@ public class Text_Processor2 extends Text_Object {
         }
         File inputDir;
         File outDir;
-        inputDir = new File(files.getLexisNexisInputDataDir(),
+        inputDir = new File(files.getInDir(),
                 dirname + "/LexisNexis");
         System.out.println(inputDir);
 
@@ -280,7 +284,7 @@ public class Text_Processor2 extends Text_Object {
             LocalDate end;
             start = dateRange.getStart();
             end = dateRange.getEnd();
-            outDir = new File(files.getLexisNexisOutputDataDir(),
+            outDir = new File(files.getOutDir(),
                     dirname + "/LexisNexis" + start.toString()
                     + "_" + end.toString());
             if (!outDir.exists()) {
@@ -311,11 +315,11 @@ public class Text_Processor2 extends Text_Object {
 
                 name = input0.getName();
                 outFile = new File(outDir, name + "Counts.csv");
-                pwCounts = env.io.getPrintWriter(outFile, false);
+                pwCounts = env.env.io.getPrintWriter(outFile, false);
                 if (writeHeadlines) {
                     outFile = new File(outDir,
                             name + "HeadlinesForArticlesContaining_" + headlineTerm + ".csv");
-                    pwHeadlines = env.io.getPrintWriter(outFile, false);
+                    pwHeadlines = env.env.io.getPrintWriter(outFile, false);
                     pwHeadlines.println("Date, Section, Length, Title");
                 }
                 /**
@@ -1334,15 +1338,13 @@ public class Text_Processor2 extends Text_Object {
     String getGuardianAPIKey() {
         String r = "";
         File f;
-        File dir;
-        dir = new File(files.getDataDir(), "private");
+        File dir  = new File(files.getDir(), "private");
         f = new File(dir, "GuardianAPIKey.txt");
         BufferedReader br;
-        br = env.io.getBufferedReader(f);
+        br = env.env.io.getBufferedReader(f);
         try {
             r = br.readLine();
             br.close();
-
         } catch (IOException ex) {
             Logger.getLogger(Text_Processor2.class.getName()).log(Level.SEVERE, null, ex);
         }

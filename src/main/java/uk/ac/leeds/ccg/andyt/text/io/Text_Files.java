@@ -25,8 +25,8 @@ import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
  */
 public class Text_Files extends Generic_Files {
 
-    private File LexisNexisInputDataDir;
-    private File LexisNexisOutputDataDir;
+    private File inDir;
+    private File outDir;
 
     public Text_Files() {
         super();
@@ -37,24 +37,24 @@ public class Text_Files extends Generic_Files {
     }
 
     /**
-     * @return the LexisNexisInputDataDir
+     * @return the inDir
      */
-    public File getLexisNexisInputDataDir() {
-        if (LexisNexisInputDataDir == null) {
-            LexisNexisInputDataDir = new File(getInputDataDir(), 
+    public File getInDir() {
+        if (inDir == null) {
+            inDir = new File(getInputDir(), 
                     Text_Strings.s_LexisNexis);
         }
-        return LexisNexisInputDataDir;
+        return inDir;
     }
 
     /**
-     * @return the LexisNexisInputDataDir
+     * @return the inDir
      */
-    public File getLexisNexisOutputDataDir() {
-        if (LexisNexisOutputDataDir == null) {
-            LexisNexisOutputDataDir = new File(getOutputDataDir(), 
+    public File getOutDir() {
+        if (outDir == null) {
+            outDir = new File(getOutputDir(), 
             Text_Strings.s_LexisNexis);
         }
-        return LexisNexisOutputDataDir;
+        return outDir;
     }
 }

@@ -56,7 +56,11 @@ public class Text_Processor extends Text_Object {
     }
 
     public static void main(String[] args) {
-        new Text_Processor(new Text_Environment()).run();
+        try {
+            new Text_Processor(new Text_Environment()).run();
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        }
     }
 
     /**
@@ -87,10 +91,10 @@ public class Text_Processor extends Text_Object {
         dirname = "LexisNexis-20171122T195223Z-001";
         File inputDir;
         File outDir;
-        inputDir = new File(files.getLexisNexisInputDataDir(), dirname);
+        inputDir = new File(files.getInDir(), dirname);
         inputDir = new File(inputDir, "LexisNexis");
         System.out.println(inputDir);
-        outDir = new File(files.getLexisNexisOutputDataDir(), dirname);
+        outDir = new File(files.getOutDir(), dirname);
         outDir = new File(outDir, "LexisNexis");
         if (outDir.exists()) {
             outDir.mkdirs();
@@ -126,11 +130,11 @@ public class Text_Processor extends Text_Object {
         for (File input0 : inputs0) {
             name = input0.getName();
             outFile = new File(outDir, name + "Counts.csv");
-            pwCounts = env.io.getPrintWriter(outFile, false);
+            pwCounts = env.env.io.getPrintWriter(outFile, false);
             if (writeHeadlines) {
                 outFile = new File(outDir,
                         name + "HeadlinesForArticlesContaining_Syria.txt");
-                pwHeadlines = env.io.getPrintWriter(outFile, false);
+                pwHeadlines = env.env.io.getPrintWriter(outFile, false);
             }
             /**
              * Print out the name of the directory/File.
@@ -336,7 +340,7 @@ public class Text_Processor extends Text_Object {
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();
         BufferedReader br;
-        br = env.io.getBufferedReader(input);
+        br = env.env.io.getBufferedReader(input);
         String line = null;
         boolean read = false;
         int n;

@@ -5,14 +5,19 @@
  */
 package uk.ac.leeds.ccg.andyt.text.core;
 
+import java.io.IOException;
 import uk.ac.leeds.ccg.andyt.generic.core.Generic_Environment;
 
 /**
  *
  * @author geoagdt
  */
-public class Text_Environment extends Generic_Environment {
+public class Text_Environment  {
     
-    public Text_Environment(){}
+    public transient Generic_Environment env;
+    
+    public Text_Environment() throws IOException {
+        env = new Generic_Environment();
+    }
     
 }
