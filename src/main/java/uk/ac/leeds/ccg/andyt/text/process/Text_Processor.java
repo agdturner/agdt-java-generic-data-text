@@ -18,6 +18,7 @@ package uk.ac.leeds.ccg.andyt.text.process;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.DayOfWeek;
@@ -65,11 +66,12 @@ public class Text_Processor extends Text_Object {
 
     /**
      * This is the main processing method.
+     * @throws java.io.IOException
      */
-    public void run() {
+    public void run() throws IOException {
 
         boolean writeHeadlines;
-        writeHeadlines = true;
+        //writeHeadlines = true;
         writeHeadlines = false;
 
         /**
@@ -85,7 +87,7 @@ public class Text_Processor extends Text_Object {
         /**
          * Initialise directories
          */
-        files = new Text_Files();
+        files = new Text_Files(env.env.files.getDir());
         String dirname;
         //dirname = "LexisNexis-20171127T155442Z-001";
         dirname = "LexisNexis-20171122T195223Z-001";
@@ -335,7 +337,7 @@ public class Text_Processor extends Text_Object {
      * @param input The input file to be parsed.
      * @return
      */
-    public Object[] parseHTML(ArrayList<String> words, File input) {
+    public Object[] parseHTML(ArrayList<String> words, File input) throws FileNotFoundException {
         Object[] result = new Object[5];
         TreeSet<DateHeadline> syriaDateHeadlines;
         syriaDateHeadlines = new TreeSet<>();

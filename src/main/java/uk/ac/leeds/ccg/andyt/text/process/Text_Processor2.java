@@ -18,6 +18,7 @@ package uk.ac.leeds.ccg.andyt.text.process;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.DayOfWeek;
@@ -38,12 +39,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
-import uk.ac.leeds.ccg.andyt.generic.io.Generic_IO;
 import uk.ac.leeds.ccg.andyt.generic.lang.Generic_String;
 import uk.ac.leeds.ccg.andyt.generic.time.Generic_LocalDateRange;
 import uk.ac.leeds.ccg.andyt.text.core.Text_Environment;
 import uk.ac.leeds.ccg.andyt.text.core.Text_Object;
-import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
 import uk.ac.leeds.ccg.andyt.text.io.Text_Files;
 
 /**
@@ -133,8 +132,9 @@ public class Text_Processor2 extends Text_Object {
 
     /**
      * This is the main processing method.
+     * @throws java.io.IOException
      */
-    public void run() {
+    public void run() throws IOException {
 
         /**
          * Set writeHeadlines to be true to write out the titles of articles for
@@ -228,7 +228,7 @@ public class Text_Processor2 extends Text_Object {
         /**
          * Initialise directories
          */
-        files = new Text_Files();
+        files = new Text_Files(env.env.files.getDir());
         String dirname;
         switch (runID) {
             case 0:
@@ -1335,7 +1335,7 @@ public class Text_Processor2 extends Text_Object {
      *
      * @return
      */
-    String getGuardianAPIKey() {
+    String getGuardianAPIKey() throws FileNotFoundException {
         String r = "";
         File f;
         File dir  = new File(files.getDir(), "private");

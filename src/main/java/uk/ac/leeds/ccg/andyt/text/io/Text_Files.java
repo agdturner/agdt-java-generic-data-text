@@ -17,6 +17,7 @@
 package uk.ac.leeds.ccg.andyt.text.io;
 
 import java.io.File;
+import java.io.IOException;
 import uk.ac.leeds.ccg.andyt.generic.io.Generic_Files;
 import uk.ac.leeds.ccg.andyt.text.core.Text_Strings;
 
@@ -28,11 +29,7 @@ public class Text_Files extends Generic_Files {
     private File inDir;
     private File outDir;
 
-    public Text_Files() {
-        super();
-    }
-
-    public Text_Files(File dataDir) {
+    public Text_Files(File dataDir) throws IOException {
         super(dataDir);
     }
 
